@@ -1,0 +1,31 @@
+1. admin (fiore)
+    - membuat daftar pertanyaan
+    - membuat daftar peserta 
+        => tiap peserta memiliki code generated sendiri agar tidak tercampur
+        => tiap peserta hanya bisa 1 kali isi dengan code yang diberikan
+    - menambahkan admin lain
+    - ganti username,sandi dan lainya
+    - baca dan hapus data?
+
+2. peserta  
+    - mengisi angket dengan pin atau code yang diberikan
+    - pin hanya bisa 1 kali pakai
+
+3. isian survey
+    - semua pasti bisa di edit
+    - rumus hitungan dari data angket
+
+Page / halaman
+
+admin
+    - halaman untuk melihat daftar peserta
+    - halaman untuk melihat score total
+    - halaman untuk generated jumlah code/pin
+
+General page 
+    - Hai/halo selamat datang
+    - pop up masukan pin 
+    - halaman pertanyaan
+    - halaman terimakasih sudah mengisi
+    - di landing page ada tombol login di kanan atas
+    - pop up kode sudah di pakai untuk mengisi data
