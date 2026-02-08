@@ -7,13 +7,20 @@
     - ganti username,sandi dan lainya
     - baca dan hapus data?
 
-2. peserta  
+2. guru
+    - melihat hasil total di sekolahnya saja
+    - melihat presentase per soal
+    - melihat data siapa yang memilih Very low,low,medium,high,very high
+
+3. peserta  
     - mengisi angket dengan pin atau code yang diberikan
     - pin hanya bisa 1 kali pakai
 
-3. isian survey
+4. isian survey
     - semua pasti bisa di edit
     - rumus hitungan dari data angket
+    - ada presentase per soal
+    - tiap soal bisa di lihat pesertanya memilih apa
 
 Page / halaman
 
