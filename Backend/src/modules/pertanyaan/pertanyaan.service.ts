@@ -77,6 +77,41 @@ export class PertanyaanService {
     }>;
   }
 
+  async findOne(id: number) {
+    const [rows] = await this.pool.query(
+      `SELECT p.id, p.isi_pertanyaan, p.kategori, p.tipe_soal, p.bobot_persentase,
+              ps.id_sekolah, s.nama_sekolah,
+              ps.id_angkatan, a.tahun_angkatan,
+              ps.id_kejuruan, k.nama_kejuruan,
+              ps.id_kelas, kl.nama_kelas
+       FROM pertanyaan p
+       LEFT JOIN pertanyaan_scope ps ON ps.id_pertanyaan = p.id
+       LEFT JOIN sekolah s ON s.id = ps.id_sekolah
+       LEFT JOIN angkatan a ON a.id = ps.id_angkatan
+       LEFT JOIN kejuruan k ON k.id = ps.id_kejuruan
+       LEFT JOIN kelas kl ON kl.id = ps.id_kelas
+       WHERE p.id = ?
+       LIMIT 1`,
+      [id],
+    );
+    const list = rows as Array<{
+      id: number;
+      isi_pertanyaan: string;
+      kategori: string;
+      tipe_soal: string;
+      bobot_persentase: number;
+      id_sekolah: number | null;
+      nama_sekolah: string | null;
+      id_angkatan: number | null;
+      tahun_angkatan: number | null;
+      id_kejuruan: number | null;
+      nama_kejuruan: string | null;
+      id_kelas: number | null;
+      nama_kelas: string | null;
+    }>;
+    return list[0] ?? null;
+  }
+
   async update(
     id: number,
     payload: {

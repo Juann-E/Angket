@@ -49,7 +49,7 @@ CREATE TABLE pelajar (
 CREATE TABLE pertanyaan (
     id INT PRIMARY KEY AUTO_INCREMENT,
     isi_pertanyaan TEXT,
-    -- Kategori berdasarkan 5 area SRSSDL dalam dokumen Williamson [cite: 83-89]
+    -- Sesuai 5 area SRSSDL dalam dokumen Williamson [cite: 83-89]
     kategori ENUM(
         'Awareness', 
         'Learning strategies', 
@@ -57,8 +57,10 @@ CREATE TABLE pertanyaan (
         'Evaluation', 
         'Interpersonal skills'
     ) NOT NULL,
-    tipe_soal ENUM('pilihan_ganda', 'essay') DEFAULT 'pilihan_ganda',
-    bobot_persentase DECIMAL(5,2)
+    -- Opsi essay dihapus karena SRSSDL murni menggunakan skala Likert 1-5 [cite: 96, 279-281]
+    tipe_soal ENUM('pilihan_ganda') DEFAULT 'pilihan_ganda',
+    -- Default 1.00 untuk memastikan skor total murni 60-300 [cite: 96, 279-281]
+    bobot_persentase DECIMAL(5,2) DEFAULT 1.00
 );
 
 -- Tabel Scope Pertanyaan (Sudah termasuk id_angkatan)

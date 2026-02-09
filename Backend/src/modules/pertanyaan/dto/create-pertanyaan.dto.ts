@@ -1,6 +1,6 @@
 export class CreatePertanyaanDto {
   isi_pertanyaan: string;
-  bobot_persentase: number;
+  bobot_persentase?: number;
   kategori: string;
   id_sekolah?: number;
   id_angkatan?: number;

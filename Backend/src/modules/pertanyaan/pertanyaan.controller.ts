@@ -7,6 +7,7 @@ import {
   Delete,
   Param,
   Patch,
+  NotFoundException,
 } from '@nestjs/common';
 import { PertanyaanService } from './pertanyaan.service';
 import { CreatePertanyaanDto } from './dto/create-pertanyaan.dto';
@@ -18,7 +19,7 @@ export class PertanyaanController {
 
   @Post()
   async create(@Body() dto: CreatePertanyaanDto) {
-    return this.service.create(dto.isi_pertanyaan, dto.bobot_persentase, dto.kategori, {
+    return this.service.create(dto.isi_pertanyaan, dto.bobot_persentase ?? 1.0, dto.kategori, {
       id_sekolah: dto.id_sekolah,
       id_angkatan: dto.id_angkatan,
       id_kejuruan: dto.id_kejuruan,
@@ -39,6 +40,15 @@ export class PertanyaanController {
       id_kejuruan: id_kejuruan ? Number(id_kejuruan) : undefined,
       id_kelas: id_kelas ? Number(id_kelas) : undefined,
     });
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    const item = await this.service.findOne(Number(id));
+    if (!item) {
+      throw new NotFoundException('Pertanyaan tidak ditemukan');
+    }
+    return item;
   }
 
   @Patch(':id')

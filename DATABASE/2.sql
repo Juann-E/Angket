@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 08 Feb 2026 pada 21.05
+-- Waktu pembuatan: 09 Feb 2026 pada 17.07
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -62,6 +62,20 @@ INSERT INTO `angkatan` (`id`, `id_sekolah`, `tahun_angkatan`) VALUES
 (3, 2, '2025'),
 (4, 2, '2020'),
 (7, 2, '2027');
+
+-- --------------------------------------------------------
+
+--
+-- Struktur dari tabel `hasil_survey`
+--
+
+CREATE TABLE `hasil_survey` (
+  `id` int(11) NOT NULL,
+  `id_pelajar` int(11) DEFAULT NULL,
+  `total_skor` int(11) DEFAULT NULL,
+  `level_sdness` enum('Low','Moderate','High') DEFAULT NULL,
+  `diselesaikan_pada` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -127,17 +141,19 @@ CREATE TABLE `pelajar` (
 CREATE TABLE `pertanyaan` (
   `id` int(11) NOT NULL,
   `isi_pertanyaan` text DEFAULT NULL,
-  `tipe_soal` enum('pilihan_ganda','essay') DEFAULT 'pilihan_ganda',
-  `bobot_persentase` decimal(5,2) DEFAULT NULL
+  `kategori` enum('Awareness','Learning strategies','Learning activities','Evaluation','Interpersonal skills') NOT NULL,
+  `tipe_soal` enum('pilihan_ganda') DEFAULT 'pilihan_ganda',
+  `bobot_persentase` decimal(5,2) DEFAULT 1.00
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data untuk tabel `pertanyaan`
 --
 
-INSERT INTO `pertanyaan` (`id`, `isi_pertanyaan`, `tipe_soal`, `bobot_persentase`) VALUES
-(1, 'Bagaimana tingkat kenyamanan?', 'pilihan_ganda', 10.00),
-(2, 'Bagaimana tingkat kenyamanan?', 'pilihan_ganda', 10.00);
+INSERT INTO `pertanyaan` (`id`, `isi_pertanyaan`, `kategori`, `tipe_soal`, `bobot_persentase`) VALUES
+(1, 'I am able to select the best method for my own learning', 'Awareness', 'pilihan_ganda', 10.00),
+(2, 'Bagaimana tingkat kenyamanan?', 'Awareness', 'pilihan_ganda', 10.00),
+(5, 'I identify my own learning needs', 'Awareness', 'pilihan_ganda', 1.00);
 
 -- --------------------------------------------------------
 
@@ -149,6 +165,7 @@ CREATE TABLE `pertanyaan_scope` (
   `id` int(11) NOT NULL,
   `id_pertanyaan` int(11) DEFAULT NULL,
   `id_sekolah` int(11) DEFAULT NULL,
+  `id_angkatan` int(11) DEFAULT NULL,
   `id_kejuruan` int(11) DEFAULT NULL,
   `id_kelas` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -157,9 +174,10 @@ CREATE TABLE `pertanyaan_scope` (
 -- Dumping data untuk tabel `pertanyaan_scope`
 --
 
-INSERT INTO `pertanyaan_scope` (`id`, `id_pertanyaan`, `id_sekolah`, `id_kejuruan`, `id_kelas`) VALUES
-(1, 1, 1, 1, 1),
-(2, 2, 1, 1, 1);
+INSERT INTO `pertanyaan_scope` (`id`, `id_pertanyaan`, `id_sekolah`, `id_angkatan`, `id_kejuruan`, `id_kelas`) VALUES
+(1, 1, 1, NULL, 1, 1),
+(2, 2, 1, NULL, 1, 1),
+(5, 5, 1, 1, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -211,6 +229,13 @@ ALTER TABLE `angkatan`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indeks untuk tabel `hasil_survey`
+--
+ALTER TABLE `hasil_survey`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `id_pelajar` (`id_pelajar`);
+
+--
 -- Indeks untuk tabel `kejuruan`
 --
 ALTER TABLE `kejuruan`
@@ -241,7 +266,12 @@ ALTER TABLE `pertanyaan`
 -- Indeks untuk tabel `pertanyaan_scope`
 --
 ALTER TABLE `pertanyaan_scope`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `fk_scope_pertanyaan` (`id_pertanyaan`),
+  ADD KEY `fk_scope_sekolah` (`id_sekolah`),
+  ADD KEY `fk_scope_angkatan` (`id_angkatan`),
+  ADD KEY `fk_scope_kejuruan` (`id_kejuruan`),
+  ADD KEY `fk_scope_kelas` (`id_kelas`);
 
 --
 -- Indeks untuk tabel `respon`
@@ -274,6 +304,12 @@ ALTER TABLE `angkatan`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
+-- AUTO_INCREMENT untuk tabel `hasil_survey`
+--
+ALTER TABLE `hasil_survey`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT untuk tabel `kejuruan`
 --
 ALTER TABLE `kejuruan`
@@ -295,13 +331,13 @@ ALTER TABLE `pelajar`
 -- AUTO_INCREMENT untuk tabel `pertanyaan`
 --
 ALTER TABLE `pertanyaan`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT untuk tabel `pertanyaan_scope`
 --
 ALTER TABLE `pertanyaan_scope`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT untuk tabel `respon`
@@ -320,10 +356,27 @@ ALTER TABLE `sekolah`
 --
 
 --
+-- Ketidakleluasaan untuk tabel `hasil_survey`
+--
+ALTER TABLE `hasil_survey`
+  ADD CONSTRAINT `hasil_survey_ibfk_1` FOREIGN KEY (`id_pelajar`) REFERENCES `pelajar` (`id`);
+
+--
 -- Ketidakleluasaan untuk tabel `pelajar`
 --
 ALTER TABLE `pelajar`
   ADD CONSTRAINT `pelajar_ibfk_1` FOREIGN KEY (`id_kelas`) REFERENCES `kelas` (`id`);
+
+--
+-- Ketidakleluasaan untuk tabel `pertanyaan_scope`
+--
+ALTER TABLE `pertanyaan_scope`
+  ADD CONSTRAINT `fk_pertanyaan_scope_angkatan` FOREIGN KEY (`id_angkatan`) REFERENCES `angkatan` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_scope_angkatan` FOREIGN KEY (`id_angkatan`) REFERENCES `angkatan` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_scope_kejuruan` FOREIGN KEY (`id_kejuruan`) REFERENCES `kejuruan` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_scope_kelas` FOREIGN KEY (`id_kelas`) REFERENCES `kelas` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_scope_pertanyaan` FOREIGN KEY (`id_pertanyaan`) REFERENCES `pertanyaan` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_scope_sekolah` FOREIGN KEY (`id_sekolah`) REFERENCES `sekolah` (`id`) ON DELETE CASCADE;
 
 --
 -- Ketidakleluasaan untuk tabel `respon`
