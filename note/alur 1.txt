@@ -1,0 +1,99 @@
+
+Berdasarkan skema database baru yang kita sepakati dan referensi instrumen SRSSDL dari dokumen Williamson, ada beberapa perbaikan krusial yang perlu kamu terapkan pada file NestJS kamu. Perbaikan ini fokus pada integrasi kolom kategori dan id_angkatan agar data angket kamu valid secara riset.
++1
+
+1. Perbaikan pada pertanyaan.service.ts
+Ada tiga poin utama yang harus diperbaiki: query INSERT pada tabel pertanyaan (tambah kolom kategori), query INSERT pada pertanyaan_scope (tambah kolom id_angkatan), dan filter pencarian .
+
+TypeScript
+// ... (Bagian atas tetap sama)
+
+  async create(
+    isi_pertanyaan: string,
+    bobot_persentase: number,
+    kategori: string, // Tambahkan kategori dari DTO
+    scope: ScopeIds,
+  ) {
+    // FIX 1: Tambahkan kolom 'kategori' pada INSERT pertanyaan
+    const [res] = await this.pool.execute(
+      'INSERT INTO pertanyaan (isi_pertanyaan, kategori, tipe_soal, bobot_persentase) VALUES (?, ?, ?, ?)',
+      [isi_pertanyaan, kategori, 'pilihan_ganda', bobot_persentase],
+    );
+    const insertId = (res as unknown as { insertId: number }).insertId;
+
+    // FIX 2: Tambahkan kolom 'id_angkatan' pada INSERT pertanyaan_scope sesuai skema baru
+    await this.pool.execute(
+      'INSERT INTO pertanyaan_scope (id_pertanyaan, id_sekolah, id_angkatan, id_kejuruan, id_kelas) VALUES (?, ?, ?, ?, ?)',
+      [
+        insertId,
+        scope.id_sekolah ?? null,
+        scope.id_angkatan ?? null,
+        scope.id_kejuruan ?? null,
+        scope.id_kelas ?? null,
+      ],
+    );
+    return { id: insertId };
+  }
+
+  async findAll(filter: ScopeIds) {
+    const conditions: string[] = [];
+    const params: any[] = [];
+    
+    // FIX 3: Tambahkan filter untuk id_angkatan agar Admin bisa melihat soal per tahun ajaran
+    if (filter.id_sekolah) { conditions.push('ps.id_sekolah = ?'); params.push(filter.id_sekolah); }
+    if (filter.id_angkatan) { conditions.push('ps.id_angkatan = ?'); params.push(filter.id_angkatan); }
+    if (filter.id_kejuruan) { conditions.push('ps.id_kejuruan = ?'); params.push(filter.id_kejuruan); }
+    if (filter.id_kelas) { conditions.push('ps.id_kelas = ?'); params.push(filter.id_kelas); }
+
+    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+    
+    // Update Query SELECT untuk menyertakan kategori dan id_angkatan
+    const [rows] = await this.pool.query(
+      `SELECT p.id, p.isi_pertanyaan, p.kategori, p.tipe_soal, p.bobot_persentase, 
+              ps.id_sekolah, ps.id_angkatan, ps.id_kejuruan, ps.id_kelas
+       FROM pertanyaan p
+       LEFT JOIN pertanyaan_scope ps ON ps.id_pertanyaan = p.id
+       ${where}
+       ORDER BY p.id DESC`,
+      params,
+    );
+    return rows;
+  }
+2. Perbaikan pada pertanyaan.controller.ts
+Controller perlu menerima input kategori dan id_angkatan agar bisa diteruskan ke Service.
+
+TypeScript
+// ... (Imports tetap sama)
+
+@Controller('pertanyaan')
+export class PertanyaanController {
+  constructor(private readonly service: PertanyaanService) {}
+
+  @Post()
+  async create(@Body() dto: CreatePertanyaanDto) {
+    // Teruskan dto.kategori dan dto.id_angkatan
+    return this.service.create(dto.isi_pertanyaan, dto.bobot_persentase, dto.kategori, {
+      id_sekolah: dto.id_sekolah,
+      id_angkatan: dto.id_angkatan, // Tambahkan ini
+      id_kejuruan: dto.id_kejuruan,
+      id_kelas: dto.id_kelas,
+    });
+  }
+
+  @Get()
+  async findAll(
+    @Query('id_sekolah') id_sekolah?: string,
+    @Query('id_angkatan') id_angkatan?: string, // Tambahkan query param
+    @Query('id_kejuruan') id_kejuruan?: string,
+    @Query('id_kelas') id_kelas?: string,
+  ) {
+    return this.service.findAll({
+      id_sekolah: id_sekolah ? Number(id_sekolah) : undefined,
+      id_angkatan: id_angkatan ? Number(id_angkatan) : undefined,
+      id_kejuruan: id_kejuruan ? Number(id_kejuruan) : undefined,
+      id_kelas: id_kelas ? Number(id_kelas) : undefined,
+    });
+  }
+  
+  // ... (Patch dan Delete tetap sama)
+}
