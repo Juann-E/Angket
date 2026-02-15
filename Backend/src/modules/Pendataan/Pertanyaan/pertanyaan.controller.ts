@@ -9,16 +9,22 @@ import {
   Patch,
   NotFoundException,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
 import { PertanyaanService } from './pertanyaan.service';
 import { CreatePertanyaanDto } from './dto/create-pertanyaan.dto';
 import { UpdatePertanyaanDto } from './dto/update-pertanyaan.dto';
+import { Roles } from '../../../auth/roles.decorator';
+import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
+import { RolesGuard } from '../../../auth/roles.guard';
 
 @Controller('pertanyaan')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class PertanyaanController {
   constructor(private readonly service: PertanyaanService) {}
 
   @Post()
+  @Roles('super_admin')
   async create(@Body() dto: CreatePertanyaanDto) {
     if (dto.id_sekolah === undefined || dto.id_sekolah === null) {
       throw new BadRequestException('id_sekolah wajib diisi');
@@ -58,11 +64,13 @@ export class PertanyaanController {
   }
 
   @Patch(':id')
+  @Roles('super_admin')
   async update(@Param('id') id: string, @Body() dto: UpdatePertanyaanDto) {
     return this.service.update(Number(id), dto);
   }
 
   @Delete(':id')
+  @Roles('super_admin')
   async remove(@Param('id') id: string) {
     return this.service.remove(Number(id));
   }
