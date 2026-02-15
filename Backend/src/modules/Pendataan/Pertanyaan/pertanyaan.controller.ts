@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
 import { PertanyaanService } from './pertanyaan.service';
 import { CreatePertanyaanDto } from './dto/create-pertanyaan.dto';
@@ -19,24 +20,29 @@ export class PertanyaanController {
 
   @Post()
   async create(@Body() dto: CreatePertanyaanDto) {
-    return this.service.create(dto.isi_pertanyaan, dto.bobot_persentase ?? 1.0, dto.kategori, {
-      id_sekolah: dto.id_sekolah,
-      id_angkatan: dto.id_angkatan,
-      id_kejuruan: dto.id_kejuruan,
-      id_kelas: dto.id_kelas,
-    });
+    if (dto.id_sekolah === undefined || dto.id_sekolah === null) {
+      throw new BadRequestException('id_sekolah wajib diisi');
+    }
+    return this.service.create(
+      dto.isi_pertanyaan,
+      dto.bobot_persentase ?? 1.0,
+      dto.kategori,
+      {
+        id_sekolah: dto.id_sekolah,
+        id_kejuruan: dto.id_kejuruan,
+        id_kelas: dto.id_kelas,
+      },
+    );
   }
 
   @Get()
   async findAll(
     @Query('id_sekolah') id_sekolah?: string,
-    @Query('id_angkatan') id_angkatan?: string,
     @Query('id_kejuruan') id_kejuruan?: string,
     @Query('id_kelas') id_kelas?: string,
   ) {
     return this.service.findAll({
       id_sekolah: id_sekolah ? Number(id_sekolah) : undefined,
-      id_angkatan: id_angkatan ? Number(id_angkatan) : undefined,
       id_kejuruan: id_kejuruan ? Number(id_kejuruan) : undefined,
       id_kelas: id_kelas ? Number(id_kelas) : undefined,
     });

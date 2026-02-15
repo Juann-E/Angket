@@ -1,7 +1,13 @@
 import {
-  Controller, Get, Post,
-  Body, Delete, Param,
-  Patch, Query, NotFoundException,
+  Controller,
+  Get,
+  Post,
+  Body,
+  Delete,
+  Param,
+  Patch,
+  Query,
+  NotFoundException,
 } from '@nestjs/common';
 import { KelasService } from './kelas.service';
 import { CreateKelasDto } from './dto/create-kelas.dto';
@@ -9,7 +15,7 @@ import { UpdateKelasDto } from './dto/update-kelas.dto';
 
 @Controller('kelas')
 export class KelasController {
-  constructor(private readonly service: KelasService) { }
+  constructor(private readonly service: KelasService) {}
 
   @Post()
   async create(@Body() dto: CreateKelasDto) {

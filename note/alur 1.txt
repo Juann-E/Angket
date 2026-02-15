@@ -5,3 +5,18 @@ jarang = 2
 tidak pernah = 1
 
 nilai tiap jawaban soal 
+
+[00:37, 12/02/2026] 01001010: Guru tidak jadi pakai
+[00:37, 12/02/2026] 01001010: Sekolah, kejuruan,kelas, Nama,absen
+[00:37, 12/02/2026] 01001010: Tidak perlu angkatan
+[00:37, 12/02/2026] 01001010: Kode per anak
+
+aku akan membuat folder respon_pertanyaan dimana itu berisi fungsi untuk menyimpan jawaban pelajar dari pertanyaan survey nya lalu di kalkulasikan serta ditandai juga kapan mereka selesai mengisi datanya nya kapan.
+
+(misal )
+
+
+
+-------------------------------------
+1. setelah selesai  generate pin, pin akan tetap valid jika user belum menenakn tombol selesai
+2. fungsi itu untuk berjaga jaga jika sinyal buruk atau masalah pada device user

@@ -20,7 +20,7 @@ export class SekolahService {
       [nama_sekolah],
     );
     const insertId = (res as unknown as { insertId: number }).insertId;
-    return { id: insertId };
+    return { id: insertId, nama_sekolah: nama_sekolah };
   }
 
   async findAll() {
@@ -42,26 +42,49 @@ export class SekolahService {
   async update(id: number, payload: { nama_sekolah?: string }) {
     const fields: string[] = [];
     const params: any[] = [];
+
     if (payload.nama_sekolah !== undefined) {
       fields.push('nama_sekolah = ?');
       params.push(payload.nama_sekolah);
     }
+
     if (!fields.length) return { affectedRows: 0 };
+
     params.push(id);
-    const [res] = await this.pool.execute(
+
+    await this.pool.execute(
       `UPDATE sekolah SET ${fields.join(', ')} WHERE id = ?`,
       params,
     );
-    return {
-      affectedRows: (res as unknown as { affectedRows: number }).affectedRows,
-    };
+
+    const [rows] = await this.pool.execute(
+      'SELECT id, nama_sekolah FROM sekolah WHERE id = ?',
+      [id],
+    );
+
+    return (rows as any[])[0];
   }
 
   async remove(id: number) {
+    // ambil data
+    const [rows] = await this.pool.execute(
+      'SELECT id, nama_sekolah FROM sekolah WHERE id = ?',
+      [id],
+    );
+
+    const data = (rows as any[])[0];
+    if (!data) {
+      return { affectedRows: 0 };
+    }
+
+    // hapus setelah dapat
     const [res] = await this.pool.execute('DELETE FROM sekolah WHERE id = ?', [
       id,
     ]);
+
     return {
+      id: data.id,
+      nama_sekolah: data.nama_sekolah,
       affectedRows: (res as unknown as { affectedRows: number }).affectedRows,
     };
   }

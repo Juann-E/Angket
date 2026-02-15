@@ -1,4 +1,4 @@
 export class CreateKejuruanDto {
-  id_angkatan: number;
+  id_sekolah: number;
   nama_kejuruan: string;
 }

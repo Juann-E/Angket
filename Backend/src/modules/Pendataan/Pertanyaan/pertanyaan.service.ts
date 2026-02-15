@@ -1,9 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { createPool, Pool } from 'mysql2/promise';
 
 type ScopeIds = {
   id_sekolah?: number;
-  id_angkatan?: number;
   id_kejuruan?: number;
   id_kelas?: number;
 };
@@ -27,6 +26,40 @@ export class PertanyaanService {
     kategori: string,
     scope: ScopeIds,
   ) {
+    const conditions: string[] = [];
+    const params: any[] = [];
+    if (scope.id_sekolah === undefined) {
+      throw new BadRequestException('id_sekolah wajib diisi');
+    }
+    conditions.push('ps.id_sekolah = ?');
+    params.push(scope.id_sekolah);
+    if (scope.id_kelas !== undefined) {
+      conditions.push('ps.id_kejuruan = ?');
+      params.push(scope.id_kejuruan ?? null);
+      conditions.push('ps.id_kelas = ?');
+      params.push(scope.id_kelas);
+    } else if (scope.id_kejuruan !== undefined) {
+      conditions.push('ps.id_kejuruan = ?');
+      params.push(scope.id_kejuruan);
+      conditions.push('ps.id_kelas IS NULL');
+    } else {
+      conditions.push('ps.id_kejuruan IS NULL');
+      conditions.push('ps.id_kelas IS NULL');
+    }
+    const where = conditions.join(' AND ');
+    const [countRows] = await this.pool.query(
+      `SELECT COUNT(*) AS cnt
+       FROM pertanyaan_scope ps
+       WHERE ${where}`,
+      params,
+    );
+    const cnt = (countRows as Array<{ cnt: number }>)[0]?.cnt ?? 0;
+    if (cnt >= 60) {
+      throw new BadRequestException(
+        'Kuota 60 pertanyaan untuk cakupan ini sudah terpenuhi',
+      );
+    }
+
     const [res] = await this.pool.execute(
       'INSERT INTO pertanyaan (isi_pertanyaan, kategori, tipe_soal, bobot_persentase) VALUES (?, ?, ?, ?)',
       [isi_pertanyaan, kategori, 'pilihan_ganda', bobot_persentase],
@@ -34,11 +67,10 @@ export class PertanyaanService {
     const insertId = (res as unknown as { insertId: number }).insertId;
 
     await this.pool.execute(
-      'INSERT INTO pertanyaan_scope (id_pertanyaan, id_sekolah, id_angkatan, id_kejuruan, id_kelas) VALUES (?, ?, ?, ?, ?)',
+      'INSERT INTO pertanyaan_scope (id_pertanyaan, id_sekolah, id_kejuruan, id_kelas) VALUES (?, ?, ?, ?)',
       [
         insertId,
         scope.id_sekolah ?? null,
-        scope.id_angkatan ?? null,
         scope.id_kejuruan ?? null,
         scope.id_kelas ?? null,
       ],
@@ -49,18 +81,31 @@ export class PertanyaanService {
   async findAll(filter: ScopeIds) {
     const conditions: string[] = [];
     const params: any[] = [];
-    if (filter.id_sekolah) { conditions.push('ps.id_sekolah = ?'); params.push(filter.id_sekolah); }
-    if (filter.id_angkatan) { conditions.push('ps.id_angkatan = ?'); params.push(filter.id_angkatan); }
-    if (filter.id_kejuruan) { conditions.push('ps.id_kejuruan = ?'); params.push(filter.id_kejuruan); }
-    if (filter.id_kelas) { conditions.push('ps.id_kelas = ?'); params.push(filter.id_kelas); }
+    if (filter.id_sekolah) {
+      conditions.push('ps.id_sekolah = ?');
+      params.push(filter.id_sekolah);
+    }
+    if (filter.id_kejuruan) {
+      conditions.push('ps.id_kejuruan = ?');
+      params.push(filter.id_kejuruan);
+    }
+    if (filter.id_kelas) {
+      conditions.push('ps.id_kelas = ?');
+      params.push(filter.id_kelas);
+    }
 
     const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const [rows] = await this.pool.query(
       `SELECT p.id, p.isi_pertanyaan, p.kategori, p.tipe_soal, p.bobot_persentase, 
-              ps.id_sekolah, ps.id_angkatan, ps.id_kejuruan, ps.id_kelas
+              ps.id_sekolah, s.nama_sekolah,
+              ps.id_kejuruan, k.nama_kejuruan,
+              ps.id_kelas, kl.nama_kelas
        FROM pertanyaan p
        LEFT JOIN pertanyaan_scope ps ON ps.id_pertanyaan = p.id
+       LEFT JOIN sekolah s ON s.id = ps.id_sekolah
+       LEFT JOIN kejuruan k ON k.id = ps.id_kejuruan
+       LEFT JOIN kelas kl ON kl.id = ps.id_kelas
        ${where}
        ORDER BY p.id DESC`,
       params,
@@ -69,11 +114,15 @@ export class PertanyaanService {
     return rows as Array<{
       id: number;
       isi_pertanyaan: string;
+      kategori: string;
       tipe_soal: string;
       bobot_persentase: number;
       id_sekolah: number | null;
+      nama_sekolah: string | null;
       id_kejuruan: number | null;
+      nama_kejuruan: string | null;
       id_kelas: number | null;
+      nama_kelas: string | null;
     }>;
   }
 
@@ -81,13 +130,11 @@ export class PertanyaanService {
     const [rows] = await this.pool.query(
       `SELECT p.id, p.isi_pertanyaan, p.kategori, p.tipe_soal, p.bobot_persentase,
               ps.id_sekolah, s.nama_sekolah,
-              ps.id_angkatan, a.tahun_angkatan,
               ps.id_kejuruan, k.nama_kejuruan,
               ps.id_kelas, kl.nama_kelas
        FROM pertanyaan p
        LEFT JOIN pertanyaan_scope ps ON ps.id_pertanyaan = p.id
        LEFT JOIN sekolah s ON s.id = ps.id_sekolah
-       LEFT JOIN angkatan a ON a.id = ps.id_angkatan
        LEFT JOIN kejuruan k ON k.id = ps.id_kejuruan
        LEFT JOIN kelas kl ON kl.id = ps.id_kelas
        WHERE p.id = ?
@@ -102,8 +149,6 @@ export class PertanyaanService {
       bobot_persentase: number;
       id_sekolah: number | null;
       nama_sekolah: string | null;
-      id_angkatan: number | null;
-      tahun_angkatan: number | null;
       id_kejuruan: number | null;
       nama_kejuruan: string | null;
       id_kelas: number | null;
@@ -115,7 +160,12 @@ export class PertanyaanService {
   async update(
     id: number,
     payload: {
-      isi_pertanyaan?: string; bobot_persentase?: number; kategori?: string
+      isi_pertanyaan?: string;
+      bobot_persentase?: number;
+      kategori?: string;
+      id_sekolah?: number;
+      id_kejuruan?: number;
+      id_kelas?: number;
     },
   ) {
     const fields: string[] = [];
@@ -132,15 +182,44 @@ export class PertanyaanService {
       fields.push('kategori = ?');
       params.push(payload.kategori);
     }
-    if (!fields.length) return { affectedRows: 0 };
-    params.push(id);
-    const [res] = await this.pool.execute(
-      `UPDATE pertanyaan SET ${fields.join(', ')} WHERE id = ?`,
-      params,
-    );
-    return {
-      affectedRows: (res as unknown as { affectedRows: number }).affectedRows,
-    };
+
+    if (fields.length) {
+      params.push(id);
+      await this.pool.execute(
+        `UPDATE pertanyaan SET ${fields.join(', ')} WHERE id = ?`,
+        params,
+      );
+    }
+
+    // Update scope if provided
+    if (
+      payload.id_sekolah !== undefined ||
+      payload.id_kejuruan !== undefined ||
+      payload.id_kelas !== undefined
+    ) {
+      const scopeFields: string[] = [];
+      const scopeParams: any[] = [];
+      if (payload.id_sekolah !== undefined) {
+        scopeFields.push('id_sekolah = ?');
+        scopeParams.push(payload.id_sekolah);
+      }
+      if (payload.id_kejuruan !== undefined) {
+        scopeFields.push('id_kejuruan = ?');
+        scopeParams.push(payload.id_kejuruan);
+      }
+      if (payload.id_kelas !== undefined) {
+        scopeFields.push('id_kelas = ?');
+        scopeParams.push(payload.id_kelas);
+      }
+
+      scopeParams.push(id);
+      await this.pool.execute(
+        `UPDATE pertanyaan_scope SET ${scopeFields.join(', ')} WHERE id_pertanyaan = ?`,
+        scopeParams,
+      );
+    }
+
+    return { success: true };
   }
 
   async remove(id: number) {

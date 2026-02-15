@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 09 Feb 2026 pada 17.07
+-- Waktu pembuatan: 15 Feb 2026 pada 03.54
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -24,6 +24,21 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Struktur dari tabel `access_code`
+--
+
+CREATE TABLE `access_code` (
+  `id` int(11) NOT NULL,
+  `code` varchar(20) NOT NULL,
+  `id_kelas` int(11) DEFAULT NULL,
+  `is_used` tinyint(1) DEFAULT 0,
+  `used_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Struktur dari tabel `admin`
 --
 
@@ -39,29 +54,7 @@ CREATE TABLE `admin` (
 --
 
 INSERT INTO `admin` (`id`, `username`, `password`, `role`) VALUES
-(1, '123', '$2b$10$YXU4DFAJQfvqlYckVS3fmu4f3MXv32z3SiP9R0vOtNGGHpgvnPuXi', 'admin');
-
--- --------------------------------------------------------
-
---
--- Struktur dari tabel `angkatan`
---
-
-CREATE TABLE `angkatan` (
-  `id` int(11) NOT NULL,
-  `id_sekolah` int(11) DEFAULT NULL,
-  `tahun_angkatan` year(4) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data untuk tabel `angkatan`
---
-
-INSERT INTO `angkatan` (`id`, `id_sekolah`, `tahun_angkatan`) VALUES
-(1, 1, '2024'),
-(3, 2, '2025'),
-(4, 2, '2020'),
-(7, 2, '2027');
+(1, '123', '$2b$10$ZQeg6sVgIRFzC2l7uXVKcu3bbkwwnEHHoO0eGMuN/k3nCiZJkHwVa', 'super_admin');
 
 -- --------------------------------------------------------
 
@@ -85,16 +78,17 @@ CREATE TABLE `hasil_survey` (
 
 CREATE TABLE `kejuruan` (
   `id` int(11) NOT NULL,
-  `id_angkatan` int(11) DEFAULT NULL,
-  `nama_kejuruan` varchar(100) DEFAULT NULL
+  `id_sekolah` int(11) DEFAULT NULL,
+  `nama_kejuruan` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Dumping data untuk tabel `kejuruan`
 --
 
-INSERT INTO `kejuruan` (`id`, `id_angkatan`, `nama_kejuruan`) VALUES
-(1, 1, 'Teknik Alat Berat');
+INSERT INTO `kejuruan` (`id`, `id_sekolah`, `nama_kejuruan`) VALUES
+(1, 1, 'Teknik Alat Berat'),
+(3, 3, 'Teknik Komputer dan Jaringan');
 
 -- --------------------------------------------------------
 
@@ -105,7 +99,7 @@ INSERT INTO `kejuruan` (`id`, `id_angkatan`, `nama_kejuruan`) VALUES
 CREATE TABLE `kelas` (
   `id` int(11) NOT NULL,
   `id_kejuruan` int(11) DEFAULT NULL,
-  `nama_kelas` varchar(50) DEFAULT NULL
+  `nama_kelas` varchar(50) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -113,8 +107,7 @@ CREATE TABLE `kelas` (
 --
 
 INSERT INTO `kelas` (`id`, `id_kejuruan`, `nama_kelas`) VALUES
-(1, 1, 'XII RPL 1'),
-(2, 1, 'X-RPL-1');
+(1, 1, 'XII RPL 1 (A)');
 
 -- --------------------------------------------------------
 
@@ -125,11 +118,11 @@ INSERT INTO `kelas` (`id`, `id_kejuruan`, `nama_kelas`) VALUES
 CREATE TABLE `pelajar` (
   `id` int(11) NOT NULL,
   `id_kelas` int(11) DEFAULT NULL,
-  `nama_pelajar` varchar(100) DEFAULT NULL,
-  `nomor_pelajar` varchar(20) DEFAULT NULL,
-  `pin_survey` varchar(10) DEFAULT NULL,
+  `nama_pelajar` varchar(100) NOT NULL,
+  `nomor_absen` varchar(10) NOT NULL,
   `status_isi` enum('belum','proses','selesai') DEFAULT 'belum',
-  `last_login` timestamp NULL DEFAULT NULL
+  `last_login` timestamp NULL DEFAULT NULL,
+  `id_access_code` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -140,7 +133,7 @@ CREATE TABLE `pelajar` (
 
 CREATE TABLE `pertanyaan` (
   `id` int(11) NOT NULL,
-  `isi_pertanyaan` text DEFAULT NULL,
+  `isi_pertanyaan` text NOT NULL,
   `kategori` enum('Awareness','Learning strategies','Learning activities','Evaluation','Interpersonal skills') NOT NULL,
   `tipe_soal` enum('pilihan_ganda') DEFAULT 'pilihan_ganda',
   `bobot_persentase` decimal(5,2) DEFAULT 1.00
@@ -151,9 +144,7 @@ CREATE TABLE `pertanyaan` (
 --
 
 INSERT INTO `pertanyaan` (`id`, `isi_pertanyaan`, `kategori`, `tipe_soal`, `bobot_persentase`) VALUES
-(1, 'I am able to select the best method for my own learning', 'Awareness', 'pilihan_ganda', 10.00),
-(2, 'Bagaimana tingkat kenyamanan?', 'Awareness', 'pilihan_ganda', 10.00),
-(5, 'I identify my own learning needs', 'Awareness', 'pilihan_ganda', 1.00);
+(1, 'I identify my own learning needs', 'Awareness', 'pilihan_ganda', 1.00);
 
 -- --------------------------------------------------------
 
@@ -165,19 +156,16 @@ CREATE TABLE `pertanyaan_scope` (
   `id` int(11) NOT NULL,
   `id_pertanyaan` int(11) DEFAULT NULL,
   `id_sekolah` int(11) DEFAULT NULL,
-  `id_angkatan` int(11) DEFAULT NULL,
   `id_kejuruan` int(11) DEFAULT NULL,
   `id_kelas` int(11) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+) ;
 
 --
 -- Dumping data untuk tabel `pertanyaan_scope`
 --
 
-INSERT INTO `pertanyaan_scope` (`id`, `id_pertanyaan`, `id_sekolah`, `id_angkatan`, `id_kejuruan`, `id_kelas`) VALUES
-(1, 1, 1, NULL, 1, 1),
-(2, 2, 1, NULL, 1, 1),
-(5, 5, 1, 1, 1, 1);
+INSERT INTO `pertanyaan_scope` (`id`, `id_pertanyaan`, `id_sekolah`, `id_kejuruan`, `id_kelas`) VALUES
+(1, 1, 1, 1, 1);
 
 -- --------------------------------------------------------
 
@@ -201,7 +189,7 @@ CREATE TABLE `respon` (
 
 CREATE TABLE `sekolah` (
   `id` int(11) NOT NULL,
-  `nama_sekolah` varchar(100) DEFAULT NULL
+  `nama_sekolah` varchar(100) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -209,11 +197,21 @@ CREATE TABLE `sekolah` (
 --
 
 INSERT INTO `sekolah` (`id`, `nama_sekolah`) VALUES
-(1, 'SMK 1');
+(1, 'SMK Negeri 1 Jakarta'),
+(3, 'SMK Negeri 2 Jakarta');
 
 --
 -- Indexes for dumped tables
 --
+
+--
+-- Indeks untuk tabel `access_code`
+--
+ALTER TABLE `access_code`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `code` (`code`),
+  ADD KEY `id_kelas` (`id_kelas`),
+  ADD KEY `idx_code_used` (`code`,`is_used`);
 
 --
 -- Indeks untuk tabel `admin`
@@ -221,12 +219,6 @@ INSERT INTO `sekolah` (`id`, `nama_sekolah`) VALUES
 ALTER TABLE `admin`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `username` (`username`);
-
---
--- Indeks untuk tabel `angkatan`
---
-ALTER TABLE `angkatan`
-  ADD PRIMARY KEY (`id`);
 
 --
 -- Indeks untuk tabel `hasil_survey`
@@ -239,21 +231,23 @@ ALTER TABLE `hasil_survey`
 -- Indeks untuk tabel `kejuruan`
 --
 ALTER TABLE `kejuruan`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `id_sekolah` (`id_sekolah`);
 
 --
 -- Indeks untuk tabel `kelas`
 --
 ALTER TABLE `kelas`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `id_kejuruan` (`id_kejuruan`);
 
 --
 -- Indeks untuk tabel `pelajar`
 --
 ALTER TABLE `pelajar`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `nomor_pelajar` (`nomor_pelajar`),
-  ADD UNIQUE KEY `pin_survey` (`pin_survey`),
+  ADD UNIQUE KEY `unique_siswa` (`nama_pelajar`,`nomor_absen`,`id_kelas`),
+  ADD UNIQUE KEY `id_access_code` (`id_access_code`),
   ADD KEY `id_kelas` (`id_kelas`);
 
 --
@@ -267,11 +261,10 @@ ALTER TABLE `pertanyaan`
 --
 ALTER TABLE `pertanyaan_scope`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `fk_scope_pertanyaan` (`id_pertanyaan`),
-  ADD KEY `fk_scope_sekolah` (`id_sekolah`),
-  ADD KEY `fk_scope_angkatan` (`id_angkatan`),
-  ADD KEY `fk_scope_kejuruan` (`id_kejuruan`),
-  ADD KEY `fk_scope_kelas` (`id_kelas`);
+  ADD KEY `id_pertanyaan` (`id_pertanyaan`),
+  ADD KEY `id_kejuruan` (`id_kejuruan`),
+  ADD KEY `id_kelas` (`id_kelas`),
+  ADD KEY `idx_scope_lookup` (`id_sekolah`,`id_kejuruan`,`id_kelas`);
 
 --
 -- Indeks untuk tabel `respon`
@@ -292,16 +285,16 @@ ALTER TABLE `sekolah`
 --
 
 --
+-- AUTO_INCREMENT untuk tabel `access_code`
+--
+ALTER TABLE `access_code`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT untuk tabel `admin`
 --
 ALTER TABLE `admin`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT untuk tabel `angkatan`
---
-ALTER TABLE `angkatan`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT untuk tabel `hasil_survey`
@@ -313,13 +306,13 @@ ALTER TABLE `hasil_survey`
 -- AUTO_INCREMENT untuk tabel `kejuruan`
 --
 ALTER TABLE `kejuruan`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT untuk tabel `kelas`
 --
 ALTER TABLE `kelas`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT untuk tabel `pelajar`
@@ -331,13 +324,13 @@ ALTER TABLE `pelajar`
 -- AUTO_INCREMENT untuk tabel `pertanyaan`
 --
 ALTER TABLE `pertanyaan`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT untuk tabel `pertanyaan_scope`
 --
 ALTER TABLE `pertanyaan_scope`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT untuk tabel `respon`
@@ -349,41 +342,58 @@ ALTER TABLE `respon`
 -- AUTO_INCREMENT untuk tabel `sekolah`
 --
 ALTER TABLE `sekolah`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
 --
 
 --
+-- Ketidakleluasaan untuk tabel `access_code`
+--
+ALTER TABLE `access_code`
+  ADD CONSTRAINT `access_code_ibfk_1` FOREIGN KEY (`id_kelas`) REFERENCES `kelas` (`id`) ON DELETE CASCADE;
+
+--
 -- Ketidakleluasaan untuk tabel `hasil_survey`
 --
 ALTER TABLE `hasil_survey`
-  ADD CONSTRAINT `hasil_survey_ibfk_1` FOREIGN KEY (`id_pelajar`) REFERENCES `pelajar` (`id`);
+  ADD CONSTRAINT `hasil_survey_ibfk_1` FOREIGN KEY (`id_pelajar`) REFERENCES `pelajar` (`id`) ON DELETE CASCADE;
+
+--
+-- Ketidakleluasaan untuk tabel `kejuruan`
+--
+ALTER TABLE `kejuruan`
+  ADD CONSTRAINT `kejuruan_ibfk_1` FOREIGN KEY (`id_sekolah`) REFERENCES `sekolah` (`id`) ON DELETE CASCADE;
+
+--
+-- Ketidakleluasaan untuk tabel `kelas`
+--
+ALTER TABLE `kelas`
+  ADD CONSTRAINT `kelas_ibfk_1` FOREIGN KEY (`id_kejuruan`) REFERENCES `kejuruan` (`id`) ON DELETE CASCADE;
 
 --
 -- Ketidakleluasaan untuk tabel `pelajar`
 --
 ALTER TABLE `pelajar`
-  ADD CONSTRAINT `pelajar_ibfk_1` FOREIGN KEY (`id_kelas`) REFERENCES `kelas` (`id`);
+  ADD CONSTRAINT `fk_pelajar_access_code` FOREIGN KEY (`id_access_code`) REFERENCES `access_code` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `pelajar_ibfk_1` FOREIGN KEY (`id_kelas`) REFERENCES `kelas` (`id`) ON DELETE CASCADE;
 
 --
 -- Ketidakleluasaan untuk tabel `pertanyaan_scope`
 --
 ALTER TABLE `pertanyaan_scope`
-  ADD CONSTRAINT `fk_pertanyaan_scope_angkatan` FOREIGN KEY (`id_angkatan`) REFERENCES `angkatan` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_scope_angkatan` FOREIGN KEY (`id_angkatan`) REFERENCES `angkatan` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_scope_kejuruan` FOREIGN KEY (`id_kejuruan`) REFERENCES `kejuruan` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_scope_kelas` FOREIGN KEY (`id_kelas`) REFERENCES `kelas` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_scope_pertanyaan` FOREIGN KEY (`id_pertanyaan`) REFERENCES `pertanyaan` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fk_scope_sekolah` FOREIGN KEY (`id_sekolah`) REFERENCES `sekolah` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `pertanyaan_scope_ibfk_1` FOREIGN KEY (`id_pertanyaan`) REFERENCES `pertanyaan` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `pertanyaan_scope_ibfk_2` FOREIGN KEY (`id_sekolah`) REFERENCES `sekolah` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `pertanyaan_scope_ibfk_3` FOREIGN KEY (`id_kejuruan`) REFERENCES `kejuruan` (`id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `pertanyaan_scope_ibfk_4` FOREIGN KEY (`id_kelas`) REFERENCES `kelas` (`id`) ON DELETE SET NULL;
 
 --
 -- Ketidakleluasaan untuk tabel `respon`
 --
 ALTER TABLE `respon`
-  ADD CONSTRAINT `respon_ibfk_1` FOREIGN KEY (`id_pelajar`) REFERENCES `pelajar` (`id`),
-  ADD CONSTRAINT `respon_ibfk_2` FOREIGN KEY (`id_pertanyaan`) REFERENCES `pertanyaan` (`id`);
+  ADD CONSTRAINT `respon_ibfk_1` FOREIGN KEY (`id_pelajar`) REFERENCES `pelajar` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `respon_ibfk_2` FOREIGN KEY (`id_pertanyaan`) REFERENCES `pertanyaan` (`id`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

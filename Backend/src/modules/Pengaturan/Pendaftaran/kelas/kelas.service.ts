@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { createPool, Pool } from 'mysql2/promise';
+import { createPool, Pool, RowDataPacket } from 'mysql2/promise';
 
 @Injectable()
 export class KelasService {
@@ -20,32 +20,41 @@ export class KelasService {
       [id_kejuruan, nama_kelas],
     );
     const insertId = (res as unknown as { insertId: number }).insertId;
-    return { id: insertId };
+    return { id: insertId, nama_kelas };
   }
 
   async findAll(filter?: { id_kejuruan?: number }) {
-    const where = filter?.id_kejuruan ? 'WHERE id_kejuruan = ?' : '';
+    const where = filter?.id_kejuruan ? 'WHERE k.id_kejuruan = ?' : '';
     const params = filter?.id_kejuruan ? [filter.id_kejuruan] : [];
-    const [rows] = await this.pool.query(
-      `SELECT id, id_kejuruan, nama_kelas FROM kelas ${where} ORDER BY id DESC`,
+    const [rows] = await this.pool.query<RowDataPacket[]>(
+      `SELECT k.id, k.id_kejuruan, k.nama_kelas, j.nama_kejuruan
+       FROM kelas k
+       LEFT JOIN kejuruan j ON j.id = k.id_kejuruan
+       ${where}
+       ORDER BY k.id DESC`,
       params,
     );
-    return rows as Array<{
+    return rows as unknown as Array<{
       id: number;
       id_kejuruan: number;
       nama_kelas: string;
+      nama_kejuruan: string | null;
     }>;
   }
 
   async findOne(id: number) {
-    const [rows] = await this.pool.query(
-      'SELECT id, id_kejuruan, nama_kelas FROM kelas WHERE id = ? LIMIT 1',
+    const [rows] = await this.pool.query<RowDataPacket[]>(
+      `SELECT k.id, k.id_kejuruan, k.nama_kelas, j.nama_kejuruan
+       FROM kelas k
+        LEFT JOIN kejuruan j ON j.id = k.id_kejuruan
+       WHERE k.id = ? LIMIT 1`,
       [id],
     );
-    const list = rows as Array<{
+    const list = rows as unknown as Array<{
       id: number;
       id_kejuruan: number;
       nama_kelas: string;
+      nama_kejuruan: string | null;
     }>;
     return list[0] ?? null;
   }
@@ -66,20 +75,45 @@ export class KelasService {
     }
     if (!fields.length) return { affectedRows: 0 };
     params.push(id);
-    const [res] = await this.pool.execute(
+    await this.pool.execute(
       `UPDATE kelas SET ${fields.join(', ')} WHERE id = ?`,
       params,
     );
-    return {
-      affectedRows: (res as unknown as { affectedRows: number }).affectedRows,
-    };
+    const [rows] = await this.pool.query<RowDataPacket[]>(
+      `SELECT k.id, k.id_kejuruan, k.nama_kelas, j.nama_kejuruan
+       FROM kelas k
+       LEFT JOIN kejuruan j ON j.id = k.id_kejuruan
+       WHERE k.id = ?`,
+      [id],
+    );
+    const updated = rows[0] as unknown as
+      | {
+          id: number;
+          id_kejuruan: number;
+          nama_kelas: string;
+          nama_kejuruan: string | null;
+        }
+      | undefined;
+    return updated ?? { affectedRows: 0 };
   }
 
   async remove(id: number) {
+    const [rows] = await this.pool.query<RowDataPacket[]>(
+      'SELECT id, nama_kelas FROM kelas WHERE id = ?',
+      [id],
+    );
+    const current = rows[0] as unknown as
+      | { id: number; nama_kelas: string }
+      | undefined;
+    if (!current) {
+      return { affectedRows: 0 };
+    }
     const [res] = await this.pool.execute('DELETE FROM kelas WHERE id = ?', [
       id,
     ]);
     return {
+      id: current.id,
+      nama_kelas: current.nama_kelas,
       affectedRows: (res as unknown as { affectedRows: number }).affectedRows,
     };
   }

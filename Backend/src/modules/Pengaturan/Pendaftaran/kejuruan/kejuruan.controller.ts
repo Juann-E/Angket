@@ -9,17 +9,17 @@ import {
   Query,
   NotFoundException,
 } from '@nestjs/common';
-import { AngkatanService } from './angkatan.service';
-import { CreateAngkatanDto } from './dto/create-angkatan.dto';
-import { UpdateAngkatanDto } from './dto/update-angkatan.dto';
+import { KejuruanService } from './kejuruan.service';
+import { CreateKejuruanDto } from './dto/create-kejuruan.dto';
+import { UpdateKejuruanDto } from './dto/update-kejuruan.dto';
 
-@Controller('angkatan')
-export class AngkatanController {
-  constructor(private readonly service: AngkatanService) {}
+@Controller('kejuruan')
+export class KejuruanController {
+  constructor(private readonly service: KejuruanService) {}
 
   @Post()
-  async create(@Body() dto: CreateAngkatanDto) {
-    return this.service.create(dto.id_sekolah, dto.tahun_angkatan);
+  async create(@Body() dto: CreateKejuruanDto) {
+    return this.service.create(dto.id_sekolah, dto.nama_kejuruan);
   }
 
   @Get()
@@ -32,12 +32,12 @@ export class AngkatanController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     const item = await this.service.findOne(Number(id));
-    if (!item) throw new NotFoundException('Angkatan tidak ditemukan');
+    if (!item) throw new NotFoundException('Kejuruan tidak ditemukan');
     return item;
   }
 
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() dto: UpdateAngkatanDto) {
+  async update(@Param('id') id: string, @Body() dto: UpdateKejuruanDto) {
     return this.service.update(Number(id), dto);
   }
 
