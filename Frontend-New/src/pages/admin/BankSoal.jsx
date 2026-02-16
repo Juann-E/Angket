@@ -24,6 +24,7 @@ const BankSoal = () => {
   const kategoriOptions = [
     'Awareness',
     'Learning Strategies',
+    'Learning Activities',
     'Evaluation',
     'Interpersonal Skills'
   ];
