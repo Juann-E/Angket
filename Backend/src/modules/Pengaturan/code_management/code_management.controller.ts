@@ -1,5 +1,8 @@
-import { Controller, Post, Body, Get, Query } from '@nestjs/common';
+import { Controller, Post, Body, Get, Query, UseGuards } from '@nestjs/common';
 import { CodeManagementService } from './code_management.service';
+import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
+import { RolesGuard } from '../../../auth/roles.guard';
+import { Roles } from '../../../auth/roles.decorator';
 
 class GenerateDto {
   id_pelajar!: number;
@@ -45,6 +48,8 @@ export class CodeManagementController {
   }
 
   @Get('find_one')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('super_admin', 'admin')
   async findOne(@Query('id_pelajar') id_pelajar: string) {
     return this.service.findOneByPelajar(Number(id_pelajar));
   }
@@ -52,5 +57,20 @@ export class CodeManagementController {
   @Post('finish')
   async finish(@Body() dto: FinishDto) {
     return this.service.finish(dto.code);
+  }
+
+  @Get('find_all')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('super_admin', 'admin')
+  async findAll(
+    @Query('nama') nama?: string,
+    @Query('id_sekolah') id_sekolah?: string,
+    @Query('id_kelas') id_kelas?: string,
+  ) {
+    return this.service.findAll({
+      nama: nama || undefined,
+      id_sekolah: id_sekolah ? Number(id_sekolah) : undefined,
+      id_kelas: id_kelas ? Number(id_kelas) : undefined,
+    });
   }
 }

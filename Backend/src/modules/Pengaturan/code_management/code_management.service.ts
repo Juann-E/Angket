@@ -181,6 +181,83 @@ export class CodeManagementService {
     };
   }
 
+  async findAll(filter: {
+    nama?: string;
+    id_sekolah?: number;
+    id_kelas?: number;
+  }) {
+    const conditions: string[] = [];
+    const params: any[] = [];
+    if (filter.id_sekolah !== undefined) {
+      conditions.push('s.id = ?');
+      params.push(filter.id_sekolah);
+    }
+    if (filter.id_kelas !== undefined) {
+      conditions.push('kl.id = ?');
+      params.push(filter.id_kelas);
+    }
+    if (filter.nama) {
+      const like = `%${filter.nama}%`;
+      conditions.push(
+        '(p.nama_pelajar LIKE ? OR s.nama_sekolah LIKE ? OR j.nama_kejuruan LIKE ?)',
+      );
+      params.push(like, like, like);
+    }
+    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+    const [rows] = await this.pool.query<RowDataPacket[]>(
+      `SELECT pc.code,
+              pc.used,
+              pc.used_at,
+              p.id AS id_pelajar,
+              p.nama_pelajar,
+              p.nomor_absen,
+              kl.id AS id_kelas,
+              kl.nama_kelas,
+              j.id AS id_kejuruan,
+              j.nama_kejuruan,
+              s.id AS id_sekolah,
+              s.nama_sekolah
+       FROM pin_code pc
+       LEFT JOIN pelajar p ON p.id = pc.id_pelajar
+       LEFT JOIN kelas kl ON kl.id = p.id_kelas
+       LEFT JOIN kejuruan j ON j.id = kl.id_kejuruan
+       LEFT JOIN sekolah s ON s.id = j.id_sekolah
+       ${where}
+       ORDER BY s.nama_sekolah, j.nama_kejuruan, kl.nama_kelas, p.nama_pelajar`,
+      params,
+    );
+    return rows.map((r) => {
+      const row = r as RowDataPacket & {
+        code: string;
+        used: number;
+        used_at: Date | null;
+        id_pelajar: number;
+        nama_pelajar: string;
+        nomor_absen: string;
+        id_kelas: number | null;
+        nama_kelas: string | null;
+        id_kejuruan: number | null;
+        nama_kejuruan: string | null;
+        id_sekolah: number | null;
+        nama_sekolah: string | null;
+      };
+      return {
+        code: row.code,
+        used: row.used === 1,
+        used_at: row.used_at,
+        id_pelajar: row.id_pelajar,
+        nama_pelajar: row.nama_pelajar,
+        nomor_absen: row.nomor_absen,
+        id_kelas: row.id_kelas,
+        nama_kelas: row.nama_kelas,
+        id_kejuruan: row.id_kejuruan,
+        nama_kejuruan: row.nama_kejuruan,
+        id_sekolah: row.id_sekolah,
+        nama_sekolah: row.nama_sekolah,
+      };
+    });
+  }
+
   async finish(code: string) {
     const [rows] = await this.pool.query<RowDataPacket[]>(
       'SELECT id, id_pelajar, used FROM pin_code WHERE code = ? LIMIT 1',

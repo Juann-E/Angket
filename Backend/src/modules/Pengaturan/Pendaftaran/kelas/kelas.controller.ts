@@ -8,16 +8,22 @@ import {
   Patch,
   Query,
   NotFoundException,
+  UseGuards,
 } from '@nestjs/common';
 import { KelasService } from './kelas.service';
 import { CreateKelasDto } from './dto/create-kelas.dto';
 import { UpdateKelasDto } from './dto/update-kelas.dto';
+import { Roles } from '../../../../auth/roles.decorator';
+import { JwtAuthGuard } from '../../../../auth/jwt-auth.guard';
+import { RolesGuard } from '../../../../auth/roles.guard';
 
 @Controller('kelas')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class KelasController {
   constructor(private readonly service: KelasService) {}
 
   @Post()
+  @Roles('super_admin')
   async create(@Body() dto: CreateKelasDto) {
     return this.service.create(dto.id_kejuruan, dto.nama_kelas);
   }
@@ -37,11 +43,13 @@ export class KelasController {
   }
 
   @Patch(':id')
+  @Roles('super_admin')
   async update(@Param('id') id: string, @Body() dto: UpdateKelasDto) {
     return this.service.update(Number(id), dto);
   }
 
   @Delete(':id')
+  @Roles('super_admin')
   async remove(@Param('id') id: string) {
     return this.service.remove(Number(id));
   }
