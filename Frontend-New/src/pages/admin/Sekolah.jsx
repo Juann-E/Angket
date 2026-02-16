@@ -103,35 +103,35 @@ const Sekolah = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="bg-white shadow rounded-lg overflow-hidden">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Data Sekolah</h1>
-          <p className="mt-1 text-sm text-gray-500">
-            Kelola data sekolah dalam sistem
-          </p>
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Data Sekolah</h1>
+            <p className="mt-1 text-sm text-gray-500">
+              Kelola data sekolah dalam sistem
+            </p>
+          </div>
+          <button
+            onClick={openCreateModal}
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+          >
+            <svg className="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Tambah Sekolah
+          </button>
         </div>
-        <button
-          onClick={openCreateModal}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          <svg className="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-          </svg>
-          + Tambah Sekolah
-        </button>
-      </div>
 
-      {/* Error Alert */}
-      {error && (
-        <div className="mb-4">
-          <Alert type="error" message={error} onClose={() => setError('')} />
-        </div>
-      )}
+        {/* Error Alert */}
+        {error && (
+          <div className="mb-4">
+            <Alert type="error" message={error} onClose={() => setError('')} />
+          </div>
+        )}
 
-      {/* Schools Table */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
+        {/* Schools Table */}
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">

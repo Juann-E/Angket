@@ -8,6 +8,12 @@ import Landing from './pages/participant/Landing'
 import Login from './pages/admin/Login'
 import Dashboard from './pages/admin/Dashboard'
 import Sekolah from './pages/admin/Sekolah'
+import Kejuruan from './pages/admin/Kejuruan'
+import Kelas from './pages/admin/Kelas'
+import BankSoal from './pages/admin/BankSoal'
+
+// Layout components
+import AdminLayout from './components/layouts/AdminLayout'
 
 function App() {
   return (
@@ -20,19 +26,15 @@ function App() {
           {/* Protected Admin Routes */}
           <Route path="/admin" element={
             <ProtectedRoute>
-              <Navigate to="/admin/dashboard" />
+              <AdminLayout />
             </ProtectedRoute>
-          } />
-          <Route path="/admin/dashboard" element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="/admin/master-data/sekolah" element={
-            <ProtectedRoute>
-              <Sekolah />
-            </ProtectedRoute>
-          } />
+          }>
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="master-data/sekolah" element={<Sekolah />} />
+            <Route path="master-data/kejuruan" element={<Kejuruan />} />
+            <Route path="master-data/kelas" element={<Kelas />} />
+            <Route path="bank-soal" element={<BankSoal />} />
+          </Route>
         </Routes>
       </Router>
     </AuthProvider>
