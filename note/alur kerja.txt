@@ -1,26 +1,18 @@
 1. admin (fiore)
-    - membuat daftar pertanyaan
-    - membuat daftar peserta 
-        => tiap peserta memiliki code generated sendiri agar tidak tercampur
-        => tiap peserta hanya bisa 1 kali isi dengan code yang diberikan
-    - menambahkan admin lain
-    - ganti username,sandi dan lainya
-    - baca dan hapus data?
-
-2. guru
-    - melihat hasil total di sekolahnya saja
-    - melihat presentase per soal
-    - melihat data siapa yang memilih Very low,low,medium,high,very high
+    - memasukan nama sekolah,kejuruan, dan kelas
+    - membuat pertanyaan 
+    - melakukan export file excel untuk hasil survey
+    - melakukan pengecekan terhadap code akeses
 
 3. peserta  
-    - mengisi angket dengan pin atau code yang diberikan
-    - pin hanya bisa 1 kali pakai
+    - daftar survey
+    - mendapat code akses survey otomatis ketika selesai regis
+    - kode akases hanya bisa di paka 1 kali
 
 4. isian survey
     - semua pasti bisa di edit
-    - rumus hitungan dari data angket
-    - ada presentase per soal
-    - tiap soal bisa di lihat pesertanya memilih apa
+    - rumus hitungan dari data angket (sudah aman)
+    - hasl survey hanya bisa di lihat oleh admin dan export file excel 
 
 Page / halaman
 
@@ -36,3 +28,26 @@ General page
     - halaman terimakasih sudah mengisi
     - di landing page ada tombol login di kanan atas
     - pop up kode sudah di pakai untuk mengisi data
+
+page bikin pertanyaan 
+    - halaman baru dengan 5 tab yaitu 
+        'Awareness','Learning strategies','Learning activities','Evaluation','Interpersonal skills'
+
+        setiap kategori atau tab maksimal ada 12 pertanyaan 
+        
+        nilai tiap jawaban soal 
+        selalu = 5
+        sering = 4
+        kadang = 3
+        jarang = 2
+        tidak pernah = 1
+
+====================================================================
+
+cara kerja ngisi pertanyaan
+    1. pelajar registrasi dan akan dapat kode akses
+    2. pelajar di bawa ke halaman pengisian soal
+    3. style nya mirip flearn agar tiap jawaban bsia di simpan, 
+        supaya jika terjadi gangguan jawaban tidak hilang
+    4. hanya bisa di submit jika 60 pertanyaan sudah di jawab semua
+

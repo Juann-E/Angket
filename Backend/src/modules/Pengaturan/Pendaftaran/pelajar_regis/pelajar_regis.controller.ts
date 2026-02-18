@@ -1,10 +1,19 @@
-import { Controller, Get, Post, Body, Query } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
 import { PelajarRegisService } from './pelajar_regis.service';
+import { JwtAuthGuard } from '../../../../auth/jwt-auth.guard';
+import { RolesGuard } from '../../../../auth/roles.guard';
+import { Roles } from '../../../../auth/roles.decorator';
 
 class RegisterPelajarDto {
   id_kelas!: number;
   nama_pelajar!: string;
   nomor_absen!: string;
+}
+
+class FindAllFilterDto {
+  nama?: string;
+  id_sekolah?: string;
+  id_kelas?: string;
 }
 
 @Controller('pengaturan/pelajar_regis')
@@ -33,5 +42,23 @@ export class PelajarRegisController {
       dto.nama_pelajar,
       dto.nomor_absen,
     );
+  }
+
+  @Get('find_one')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('super_admin', 'admin')
+  async findOne(@Query('id_pelajar') id_pelajar: string) {
+    return this.service.findOne(Number(id_pelajar));
+  }
+
+  @Get('find_all')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('super_admin', 'admin')
+  async findAll(@Query() query: FindAllFilterDto) {
+    return this.service.findAll({
+      nama: query.nama || undefined,
+      id_sekolah: query.id_sekolah ? Number(query.id_sekolah) : undefined,
+      id_kelas: query.id_kelas ? Number(query.id_kelas) : undefined,
+    });
   }
 }

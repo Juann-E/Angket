@@ -1,11 +1,12 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { createPool, Pool, RowDataPacket } from 'mysql2/promise';
+import { CodeManagementService } from '../../code_management/code_management.service';
 
 @Injectable()
 export class PelajarRegisService {
   private pool: Pool;
 
-  constructor() {
+  constructor(private readonly codeManagementService: CodeManagementService) {
     this.pool = createPool({
       host: process.env.DB_HOST,
       user: process.env.DB_USER,
@@ -63,20 +64,165 @@ export class PelajarRegisService {
         [id_kelas, nama_pelajar, nomor_absen, 'belum'],
       );
       const insertId = (res as unknown as { insertId: number }).insertId;
+      const codeInfo: { code: string; used: boolean } =
+        await this.codeManagementService.generateForPelajar(insertId);
       return {
         id: insertId,
         id_kelas,
         nama_pelajar,
         nomor_absen,
         status_isi: 'belum',
+        access_code: codeInfo.code,
       };
-    } catch (err: any) {
-      if (err.code === 'ER_DUP_ENTRY') {
+    } catch (err) {
+      const dbErr = err as { code?: string };
+      if (dbErr.code === 'ER_DUP_ENTRY') {
         throw new BadRequestException(
           'Siswa sudah terdaftar di kelas yang dipilih',
         );
       }
       throw err;
     }
+  }
+
+  async findOne(id_pelajar: number) {
+    const [rows] = await this.pool.query<RowDataPacket[]>(
+      `SELECT p.id AS id_pelajar,
+              p.nama_pelajar,
+              p.nomor_absen,
+              p.status_isi,
+              kl.id AS id_kelas,
+              kl.nama_kelas,
+              j.id AS id_kejuruan,
+              j.nama_kejuruan,
+              s.id AS id_sekolah,
+              s.nama_sekolah,
+              ac.code,
+              ac.is_used,
+              ac.used_at
+       FROM pelajar p
+       LEFT JOIN kelas kl ON kl.id = p.id_kelas
+       LEFT JOIN kejuruan j ON j.id = kl.id_kejuruan
+       LEFT JOIN sekolah s ON s.id = j.id_sekolah
+       LEFT JOIN access_code ac ON ac.id = p.id_access_code
+       WHERE p.id = ?
+       LIMIT 1`,
+      [id_pelajar],
+    );
+    const row = rows[0] as
+      | (RowDataPacket & {
+          id_pelajar: number;
+          nama_pelajar: string;
+          nomor_absen: string;
+          status_isi: string;
+          id_kelas: number | null;
+          nama_kelas: string | null;
+          id_kejuruan: number | null;
+          nama_kejuruan: string | null;
+          id_sekolah: number | null;
+          nama_sekolah: string | null;
+          code: string | null;
+          is_used: number | null;
+          used_at: Date | null;
+        })
+      | undefined;
+    if (!row) {
+      throw new BadRequestException('Pelajar tidak ditemukan');
+    }
+    return {
+      id_pelajar: row.id_pelajar,
+      nama_pelajar: row.nama_pelajar,
+      nomor_absen: row.nomor_absen,
+      status_isi: row.status_isi,
+      id_kelas: row.id_kelas,
+      nama_kelas: row.nama_kelas,
+      id_kejuruan: row.id_kejuruan,
+      nama_kejuruan: row.nama_kejuruan,
+      id_sekolah: row.id_sekolah,
+      nama_sekolah: row.nama_sekolah,
+      access_code: row.code,
+      is_used: row.is_used === 1,
+      used_at: row.used_at,
+    };
+  }
+
+  async findAll(filter: {
+    nama?: string;
+    id_sekolah?: number;
+    id_kelas?: number;
+  }) {
+    const conditions: string[] = [];
+    const params: any[] = [];
+    if (filter.id_sekolah !== undefined) {
+      conditions.push('s.id = ?');
+      params.push(filter.id_sekolah);
+    }
+    if (filter.id_kelas !== undefined) {
+      conditions.push('kl.id = ?');
+      params.push(filter.id_kelas);
+    }
+    if (filter.nama) {
+      const like = `%${filter.nama}%`;
+      conditions.push(
+        '(p.nama_pelajar LIKE ? OR s.nama_sekolah LIKE ? OR j.nama_kejuruan LIKE ?)',
+      );
+      params.push(like, like, like);
+    }
+    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+    const [rows] = await this.pool.query<RowDataPacket[]>(
+      `SELECT p.id AS id_pelajar,
+              p.nama_pelajar,
+              p.nomor_absen,
+              p.status_isi,
+              kl.id AS id_kelas,
+              kl.nama_kelas,
+              j.id AS id_kejuruan,
+              j.nama_kejuruan,
+              s.id AS id_sekolah,
+              s.nama_sekolah,
+              ac.code,
+              ac.is_used,
+              ac.used_at
+       FROM pelajar p
+       LEFT JOIN kelas kl ON kl.id = p.id_kelas
+       LEFT JOIN kejuruan j ON j.id = kl.id_kejuruan
+       LEFT JOIN sekolah s ON s.id = j.id_sekolah
+       LEFT JOIN access_code ac ON ac.id = p.id_access_code
+       ${where}
+       ORDER BY s.nama_sekolah, j.nama_kejuruan, kl.nama_kelas, p.nama_pelajar`,
+      params,
+    );
+    return rows.map((r) => {
+      const row = r as RowDataPacket & {
+        id_pelajar: number;
+        nama_pelajar: string;
+        nomor_absen: string;
+        status_isi: string;
+        id_kelas: number | null;
+        nama_kelas: string | null;
+        id_kejuruan: number | null;
+        nama_kejuruan: string | null;
+        id_sekolah: number | null;
+        nama_sekolah: string | null;
+        code: string | null;
+        is_used: number | null;
+        used_at: Date | null;
+      };
+      return {
+        id_pelajar: row.id_pelajar,
+        nama_pelajar: row.nama_pelajar,
+        nomor_absen: row.nomor_absen,
+        status_isi: row.status_isi,
+        id_kelas: row.id_kelas,
+        nama_kelas: row.nama_kelas,
+        id_kejuruan: row.id_kejuruan,
+        nama_kejuruan: row.nama_kejuruan,
+        id_sekolah: row.id_sekolah,
+        nama_sekolah: row.nama_sekolah,
+        access_code: row.code,
+        is_used: row.is_used === 1,
+        used_at: row.used_at,
+      };
+    });
   }
 }

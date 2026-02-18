@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 15 Feb 2026 pada 03.54
+-- Waktu pembuatan: 18 Feb 2026 pada 14.48
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -35,6 +35,13 @@ CREATE TABLE `access_code` (
   `used_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `access_code`
+--
+
+INSERT INTO `access_code` (`id`, `code`, `id_kelas`, `is_used`, `used_at`, `created_at`) VALUES
+(2, 'WvytVfvu', 1, 1, '2026-02-18 12:18:04', '2026-02-18 07:43:44');
 
 -- --------------------------------------------------------
 
@@ -69,6 +76,13 @@ CREATE TABLE `hasil_survey` (
   `level_sdness` enum('Low','Moderate','High') DEFAULT NULL,
   `diselesaikan_pada` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `hasil_survey`
+--
+
+INSERT INTO `hasil_survey` (`id`, `id_pelajar`, `total_skor`, `level_sdness`, `diselesaikan_pada`) VALUES
+(1, 10, 9, 'High', '2026-02-18 12:18:04');
 
 -- --------------------------------------------------------
 
@@ -125,6 +139,13 @@ CREATE TABLE `pelajar` (
   `id_access_code` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data untuk tabel `pelajar`
+--
+
+INSERT INTO `pelajar` (`id`, `id_kelas`, `nama_pelajar`, `nomor_absen`, `status_isi`, `last_login`, `id_access_code`) VALUES
+(10, 1, 'Rizky Testing', '15', 'selesai', NULL, 2);
+
 -- --------------------------------------------------------
 
 --
@@ -144,28 +165,12 @@ CREATE TABLE `pertanyaan` (
 --
 
 INSERT INTO `pertanyaan` (`id`, `isi_pertanyaan`, `kategori`, `tipe_soal`, `bobot_persentase`) VALUES
-(1, 'I identify my own learning needs', 'Awareness', 'pilihan_ganda', 1.00);
-
--- --------------------------------------------------------
-
---
--- Struktur dari tabel `pertanyaan_scope`
---
-
-CREATE TABLE `pertanyaan_scope` (
-  `id` int(11) NOT NULL,
-  `id_pertanyaan` int(11) DEFAULT NULL,
-  `id_sekolah` int(11) DEFAULT NULL,
-  `id_kejuruan` int(11) DEFAULT NULL,
-  `id_kelas` int(11) DEFAULT NULL
-) ;
-
---
--- Dumping data untuk tabel `pertanyaan_scope`
---
-
-INSERT INTO `pertanyaan_scope` (`id`, `id_pertanyaan`, `id_sekolah`, `id_kejuruan`, `id_kelas`) VALUES
-(1, 1, 1, 1, 1);
+(1, 'I identify my own learning needs', 'Awareness', 'pilihan_ganda', 1.00),
+(2, 'I identify my own learning needs', 'Awareness', 'pilihan_ganda', 1.00),
+(3, 'I identify my own learning needs', 'Awareness', 'pilihan_ganda', 1.00),
+(4, 'I identify mdgfbhdfgdfgdfneeds', 'Awareness', 'pilihan_ganda', 1.00),
+(5, 'I idedfghfghfdhgfbhdfgdfgdfneeds', 'Awareness', 'pilihan_ganda', 1.00),
+(6, 'I 1212', 'Awareness', 'pilihan_ganda', 1.00);
 
 -- --------------------------------------------------------
 
@@ -180,6 +185,14 @@ CREATE TABLE `respon` (
   `skor_poin` tinyint(4) DEFAULT NULL CHECK (`skor_poin` between 1 and 5),
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data untuk tabel `respon`
+--
+
+INSERT INTO `respon` (`id`, `id_pelajar`, `id_pertanyaan`, `skor_poin`, `created_at`) VALUES
+(1, 10, 1, 5, '2026-02-18 11:59:59'),
+(2, 10, 2, 4, '2026-02-18 12:00:00');
 
 -- --------------------------------------------------------
 
@@ -198,7 +211,8 @@ CREATE TABLE `sekolah` (
 
 INSERT INTO `sekolah` (`id`, `nama_sekolah`) VALUES
 (1, 'SMK Negeri 1 Jakarta'),
-(3, 'SMK Negeri 2 Jakarta');
+(3, 'SMK Negeri 2 Jakarta'),
+(4, 'SMK Negeri 2 Jakarta');
 
 --
 -- Indexes for dumped tables
@@ -257,16 +271,6 @@ ALTER TABLE `pertanyaan`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indeks untuk tabel `pertanyaan_scope`
---
-ALTER TABLE `pertanyaan_scope`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `id_pertanyaan` (`id_pertanyaan`),
-  ADD KEY `id_kejuruan` (`id_kejuruan`),
-  ADD KEY `id_kelas` (`id_kelas`),
-  ADD KEY `idx_scope_lookup` (`id_sekolah`,`id_kejuruan`,`id_kelas`);
-
---
 -- Indeks untuk tabel `respon`
 --
 ALTER TABLE `respon`
@@ -288,7 +292,7 @@ ALTER TABLE `sekolah`
 -- AUTO_INCREMENT untuk tabel `access_code`
 --
 ALTER TABLE `access_code`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT untuk tabel `admin`
@@ -300,7 +304,7 @@ ALTER TABLE `admin`
 -- AUTO_INCREMENT untuk tabel `hasil_survey`
 --
 ALTER TABLE `hasil_survey`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
 -- AUTO_INCREMENT untuk tabel `kejuruan`
@@ -318,31 +322,25 @@ ALTER TABLE `kelas`
 -- AUTO_INCREMENT untuk tabel `pelajar`
 --
 ALTER TABLE `pelajar`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT untuk tabel `pertanyaan`
 --
 ALTER TABLE `pertanyaan`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
-
---
--- AUTO_INCREMENT untuk tabel `pertanyaan_scope`
---
-ALTER TABLE `pertanyaan_scope`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT untuk tabel `respon`
 --
 ALTER TABLE `respon`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT untuk tabel `sekolah`
 --
 ALTER TABLE `sekolah`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- Ketidakleluasaan untuk tabel pelimpahan (Dumped Tables)
@@ -378,15 +376,6 @@ ALTER TABLE `kelas`
 ALTER TABLE `pelajar`
   ADD CONSTRAINT `fk_pelajar_access_code` FOREIGN KEY (`id_access_code`) REFERENCES `access_code` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `pelajar_ibfk_1` FOREIGN KEY (`id_kelas`) REFERENCES `kelas` (`id`) ON DELETE CASCADE;
-
---
--- Ketidakleluasaan untuk tabel `pertanyaan_scope`
---
-ALTER TABLE `pertanyaan_scope`
-  ADD CONSTRAINT `pertanyaan_scope_ibfk_1` FOREIGN KEY (`id_pertanyaan`) REFERENCES `pertanyaan` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `pertanyaan_scope_ibfk_2` FOREIGN KEY (`id_sekolah`) REFERENCES `sekolah` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `pertanyaan_scope_ibfk_3` FOREIGN KEY (`id_kejuruan`) REFERENCES `kejuruan` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `pertanyaan_scope_ibfk_4` FOREIGN KEY (`id_kelas`) REFERENCES `kelas` (`id`) ON DELETE SET NULL;
 
 --
 -- Ketidakleluasaan untuk tabel `respon`

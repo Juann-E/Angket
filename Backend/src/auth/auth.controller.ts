@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  HttpCode,
-  UseGuards,
-  Req,
-} from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, UseGuards } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -22,18 +15,7 @@ export class AuthController {
   @Post('logout')
   @HttpCode(200)
   @UseGuards(JwtAuthGuard)
-  async logout(
-    @Req()
-    req: {
-      user?: {
-        jti?: string;
-      };
-    },
-  ) {
-    const jti = req.user?.jti;
-    if (jti) {
-      await this.authService.revokeToken(jti);
-    }
+  logout() {
     return { message: 'Logout berhasil' };
   }
 }

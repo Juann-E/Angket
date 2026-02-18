@@ -17,17 +17,6 @@ export class AuthService {
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
     });
-    void this.ensureRevokedTable();
-  }
-
-  private async ensureRevokedTable() {
-    await this.pool.execute(`
-      CREATE TABLE IF NOT EXISTS revoked_token (
-        id INT PRIMARY KEY AUTO_INCREMENT,
-        jti VARCHAR(255) UNIQUE,
-        revoked_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
   }
 
   async validateUser(username: string, password: string) {
@@ -58,20 +47,5 @@ export class AuthService {
     };
     const access_token = await this.jwtService.signAsync(payload);
     return { access_token };
-  }
-
-  async revokeToken(jti: string) {
-    await this.pool.execute(
-      'INSERT IGNORE INTO revoked_token (jti) VALUES (?)',
-      [jti],
-    );
-  }
-
-  async isTokenRevoked(jti: string) {
-    const [rows] = await this.pool.query<RowDataPacket[]>(
-      'SELECT id FROM revoked_token WHERE jti = ? LIMIT 1',
-      [jti],
-    );
-    return !!rows[0];
   }
 }

@@ -20,3 +20,6 @@ aku akan membuat folder respon_pertanyaan dimana itu berisi fungsi untuk menyimp
 -------------------------------------
 1. setelah selesai  generate pin, pin akan tetap valid jika user belum menenakn tombol selesai
 2. fungsi itu untuk berjaga jaga jika sinyal buruk atau masalah pada device user
+
+
+pertanyaan
