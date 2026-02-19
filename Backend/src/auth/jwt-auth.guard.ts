@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { Role } from './auth.service';
+import { AuthService, Role } from './auth.service';
 
 type JwtPayload = {
   sub: number;
@@ -20,6 +20,7 @@ export class JwtAuthGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly authService: AuthService,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -41,6 +42,9 @@ export class JwtAuthGuard implements CanActivate {
         secret: this.configService.get<string>('JWT_SECRET') ?? 'changeme',
       });
     } catch {
+      throw new UnauthorizedException();
+    }
+    if (this.authService.isTokenRevoked(payload.jti)) {
       throw new UnauthorizedException();
     }
     request.user = {

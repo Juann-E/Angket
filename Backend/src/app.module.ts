@@ -9,6 +9,7 @@ import { KejuruanModule } from './modules/Pengaturan/Pendaftaran/kejuruan/kejuru
 import { KelasModule } from './modules/Pengaturan/Pendaftaran/kelas/kelas.module';
 import { PelajarRegisModule } from './modules/Pengaturan/Pendaftaran/pelajar_regis/pelajar_regis.module';
 import { CodeManagementModule } from './modules/Pengaturan/code_management/code_management.module';
+import { AccountManagementModule } from './modules/Pengaturan/account_management/account_management.module';
 import { ResponPertanyaanModule } from './modules/Pendataan/respon_pertanyaan/respon_pertanyaan.module';
 
 @Module({
@@ -21,6 +22,7 @@ import { ResponPertanyaanModule } from './modules/Pendataan/respon_pertanyaan/re
     KelasModule,
     PelajarRegisModule,
     CodeManagementModule,
+    AccountManagementModule,
     ResponPertanyaanModule,
   ],
   controllers: [AppController],

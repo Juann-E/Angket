@@ -9,6 +9,7 @@ export type Role = 'super_admin' | 'admin';
 @Injectable()
 export class AuthService {
   private pool: Pool;
+  private readonly revokedJtis = new Set<string>();
 
   constructor(private readonly jwtService: JwtService) {
     this.pool = createPool({
@@ -47,5 +48,13 @@ export class AuthService {
     };
     const access_token = await this.jwtService.signAsync(payload);
     return { access_token };
+  }
+
+  revokeToken(jti: string) {
+    this.revokedJtis.add(jti);
+  }
+
+  isTokenRevoked(jti: string): boolean {
+    return this.revokedJtis.has(jti);
   }
 }
