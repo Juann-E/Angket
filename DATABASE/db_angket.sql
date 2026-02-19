@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 18 Feb 2026 pada 14.48
+-- Waktu pembuatan: 19 Feb 2026 pada 14.51
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -61,7 +61,8 @@ CREATE TABLE `admin` (
 --
 
 INSERT INTO `admin` (`id`, `username`, `password`, `role`) VALUES
-(1, '123', '$2b$10$ZQeg6sVgIRFzC2l7uXVKcu3bbkwwnEHHoO0eGMuN/k3nCiZJkHwVa', 'super_admin');
+(1, '123', '$2b$10$D8JnLpJZXoA3xpuqpsw2Uu/LOpzb3nxwdW7jtafsxUTUOURY47n9G', 'super_admin'),
+(3, 'admin_baru', '$2b$10$Yd6y0.9tciqMqif89aEBa.F6tdK/fiWvLSFI1Rxew4/r/M5q4GGLG', 'admin');
 
 -- --------------------------------------------------------
 
@@ -298,7 +299,7 @@ ALTER TABLE `access_code`
 -- AUTO_INCREMENT untuk tabel `admin`
 --
 ALTER TABLE `admin`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT untuk tabel `hasil_survey`
