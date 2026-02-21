@@ -7,7 +7,4 @@ export class UpdatePertanyaanDto {
     | 'Learning activities'
     | 'Evaluation'
     | 'Interpersonal skills';
-  id_sekolah?: number;
-  id_kejuruan?: number;
-  id_kelas?: number;
 }
