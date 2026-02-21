@@ -85,7 +85,28 @@ export class PelajarRegisService {
     }
   }
 
-  async findOne(id_pelajar: number) {
+  async findOne(filter: {
+    id_pelajar: number;
+    id_sekolah?: number;
+    id_kejuruan?: number;
+    id_kelas?: number;
+  }) {
+    const conditions: string[] = ['p.id = ?'];
+    const params: any[] = [filter.id_pelajar];
+    if (filter.id_kelas !== undefined) {
+      conditions.push('kl.id = ?');
+      params.push(filter.id_kelas);
+    }
+    if (filter.id_kejuruan !== undefined) {
+      conditions.push('j.id = ?');
+      params.push(filter.id_kejuruan);
+    }
+    if (filter.id_sekolah !== undefined) {
+      conditions.push('s.id = ?');
+      params.push(filter.id_sekolah);
+    }
+    const where = `WHERE ${conditions.join(' AND ')}`;
+
     const [rows] = await this.pool.query<RowDataPacket[]>(
       `SELECT p.id AS id_pelajar,
               p.nama_pelajar,
@@ -105,9 +126,9 @@ export class PelajarRegisService {
        LEFT JOIN kejuruan j ON j.id = kl.id_kejuruan
        LEFT JOIN sekolah s ON s.id = j.id_sekolah
        LEFT JOIN access_code ac ON ac.id = p.id_access_code
-       WHERE p.id = ?
+       ${where}
        LIMIT 1`,
-      [id_pelajar],
+      params,
     );
     const row = rows[0] as
       | (RowDataPacket & {

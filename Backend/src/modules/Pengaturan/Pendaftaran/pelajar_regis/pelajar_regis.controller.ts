@@ -16,6 +16,13 @@ class FindAllFilterDto {
   id_kelas?: string;
 }
 
+class FindOneFilterDto {
+  id_pelajar!: string;
+  id_sekolah?: string;
+  id_kejuruan?: string;
+  id_kelas?: string;
+}
+
 @Controller('pengaturan/pelajar_regis')
 export class PelajarRegisController {
   constructor(private readonly service: PelajarRegisService) {}
@@ -47,8 +54,13 @@ export class PelajarRegisController {
   @Get('find_one')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('super_admin', 'admin')
-  async findOne(@Query('id_pelajar') id_pelajar: string) {
-    return this.service.findOne(Number(id_pelajar));
+  async findOne(@Query() query: FindOneFilterDto) {
+    return this.service.findOne({
+      id_pelajar: Number(query.id_pelajar),
+      id_sekolah: query.id_sekolah ? Number(query.id_sekolah) : undefined,
+      id_kejuruan: query.id_kejuruan ? Number(query.id_kejuruan) : undefined,
+      id_kelas: query.id_kelas ? Number(query.id_kelas) : undefined,
+    });
   }
 
   @Get('find_all')

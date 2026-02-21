@@ -11,6 +11,7 @@ import { PelajarRegisModule } from './modules/Pengaturan/Pendaftaran/pelajar_reg
 import { CodeManagementModule } from './modules/Pengaturan/code_management/code_management.module';
 import { AccountManagementModule } from './modules/Pengaturan/account_management/account_management.module';
 import { ResponPertanyaanModule } from './modules/Pendataan/respon_pertanyaan/respon_pertanyaan.module';
+import { ExportHasilModule } from './modules/Pendataan/Export_hasil/export_hasil.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ResponPertanyaanModule } from './modules/Pendataan/respon_pertanyaan/re
     CodeManagementModule,
     AccountManagementModule,
     ResponPertanyaanModule,
+    ExportHasilModule,
   ],
   controllers: [AppController],
   providers: [AppService],
