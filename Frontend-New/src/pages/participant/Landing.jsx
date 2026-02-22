@@ -65,7 +65,7 @@ const Landing = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
           <div className="text-center">
             <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-              Evaluasi Kemandirian Belajar Siswa (SDL Check)
+              Self Direction Learning (SDL Check)
             </h1>
             <p className="text-xl text-blue-100 mb-10 max-w-3xl mx-auto">
               Ukur tingkat Self-Directed Learning (SDL) siswa dengan mudah, cepat, dan akurat.
