@@ -15,6 +15,33 @@ export class AccountManagementService {
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
     });
+
+    // Inisialisasi admin default jika belum ada data admin sama sekali
+    void this.initDefaultAdmin();
+  }
+
+  private async initDefaultAdmin() {
+    try {
+      const [rows] = await this.pool.query<RowDataPacket[]>(
+        'SELECT COUNT(*) AS count FROM admin',
+      );
+      const row = rows[0] as RowDataPacket & { count: number };
+      const count = row?.count ?? 0;
+
+      if (count === 0) {
+        const defaultUsername = process.env.DEFAULT_ADMIN_USERNAME ?? '123';
+        const defaultPassword = process.env.DEFAULT_ADMIN_PASSWORD ?? '123';
+        const defaultRole: Role = 'super_admin';
+
+        await this.createAdmin(defaultUsername, defaultPassword, defaultRole);
+
+        console.log(
+          `Default admin created with username="${defaultUsername}" (role=${defaultRole})`,
+        );
+      }
+    } catch (err) {
+      console.error('Gagal inisialisasi admin default:', err);
+    }
   }
 
   async createAdmin(username: string, password: string, role: Role) {

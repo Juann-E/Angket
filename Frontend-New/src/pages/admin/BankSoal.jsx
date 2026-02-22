@@ -5,46 +5,29 @@ import Alert from '../../components/common/Alert';
 
 const BankSoal = () => {
   const [pertanyaanList, setPertanyaanList] = useState([]);
-  const [sekolahList, setSekolahList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentPertanyaan, setCurrentPertanyaan] = useState(null);
+  const [activeTab, setActiveTab] = useState('Awareness');
   const [formData, setFormData] = useState({ 
-    id_sekolah: '',
     isi_pertanyaan: '', 
-    kategori: 'Awareness',
-    tipe_soal: 'pilihan_ganda',
     bobot_persentase: 1
   });
-  const [fetchingSekolah, setFetchingSekolah] = useState(false);
 
-  // Kategori options
-  const kategoriOptions = [
-    'Awareness',
-    'Learning Strategies',
-    'Learning Activities',
-    'Evaluation',
-    'Interpersonal Skills'
+  const MAX_PER_KATEGORI = 12;
+
+  const normalizeKategori = (value) =>
+    (value || '').toString().toLowerCase().trim();
+
+  const kategoriTabs = [
+    { value: 'Awareness', label: 'Awareness' },
+    { value: 'Learning Strategies', label: 'Learning strategies' },
+    { value: 'Learning Activities', label: 'Learning activities' },
+    { value: 'Evaluation', label: 'Evaluation' },
+    { value: 'Interpersonal Skills', label: 'Interpersonal skills' }
   ];
-
-  // Tipe soal options
-  const tipeSoalOptions = [
-    'pilihan_ganda',
-    'essay'
-  ];
-
-  // Get badge color based on kategori
-  const getKategoriBadgeColor = (kategori) => {
-    const colorMap = {
-      'Awareness': 'bg-blue-100 text-blue-800',
-      'Learning Strategies': 'bg-green-100 text-green-800',
-      'Evaluation': 'bg-purple-100 text-purple-800',
-      'Interpersonal Skills': 'bg-yellow-100 text-yellow-800'
-    };
-    return colorMap[kategori] || 'bg-gray-100 text-gray-800';
-  };
 
   // Truncate long text
   const truncateText = (text, maxLength = 80) => {
@@ -52,24 +35,23 @@ const BankSoal = () => {
     return text.substring(0, maxLength) + '...';
   };
 
-  // Fetch schools and questions
+  const getCountForKategori = (kategori) => {
+    const target = normalizeKategori(kategori);
+    return pertanyaanList.filter(
+      (pertanyaan) => normalizeKategori(pertanyaan.kategori) === target
+    ).length;
+  };
+
+  const filteredPertanyaan = pertanyaanList.filter(
+    (pertanyaan) =>
+      normalizeKategori(pertanyaan.kategori) === normalizeKategori(activeTab)
+  );
+
+  const activeTabCount = getCountForKategori(activeTab);
+
   useEffect(() => {
-    fetchSekolahList();
     fetchPertanyaan();
   }, []);
-
-  const fetchSekolahList = async () => {
-    try {
-      setFetchingSekolah(true);
-      const response = await axiosClient.get('/sekolah');
-      setSekolahList(response.data);
-    } catch (err) {
-      setError('Gagal mengambil data sekolah. Pastikan Backend NestJS sudah berjalan.');
-      console.error('Error fetching schools:', err);
-    } finally {
-      setFetchingSekolah(false);
-    }
-  };
 
   const fetchPertanyaan = async () => {
     try {
@@ -87,42 +69,33 @@ const BankSoal = () => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+    setFormData((prev) => ({
+      ...prev,
       [name]: name === 'bobot_persentase' ? parseFloat(value) : value
-    });
+    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
     try {
+      const payload = {
+        isi_pertanyaan: formData.isi_pertanyaan,
+        bobot_persentase: formData.bobot_persentase || 1,
+        tipe_soal: 'pilihan_ganda',
+        kategori: activeTab,
+        id_sekolah: 1
+      };
+
       if (isEditing) {
-        // Update existing question
-        await axiosClient.patch(`/pertanyaan/${currentPertanyaan.id}`, {
-          id_sekolah: parseInt(formData.id_sekolah),
-          isi_pertanyaan: formData.isi_pertanyaan,
-          kategori: formData.kategori,
-          tipe_soal: formData.tipe_soal,
-          bobot_persentase: formData.bobot_persentase
-        });
+        await axiosClient.patch(`/pertanyaan/${currentPertanyaan.id}`, payload);
       } else {
-        // Create new question
-        await axiosClient.post('/pertanyaan', {
-          id_sekolah: parseInt(formData.id_sekolah),
-          isi_pertanyaan: formData.isi_pertanyaan,
-          kategori: formData.kategori,
-          tipe_soal: formData.tipe_soal,
-          bobot_persentase: formData.bobot_persentase
-        });
+        await axiosClient.post('/pertanyaan', payload);
       }
       
       setShowModal(false);
       setFormData({ 
-        id_sekolah: '',
         isi_pertanyaan: '', 
-        kategori: 'Awareness',
-        tipe_soal: 'pilihan_ganda',
         bobot_persentase: 1
       });
       fetchPertanyaan(); // Refresh data
@@ -135,12 +108,10 @@ const BankSoal = () => {
   };
 
   const handleEdit = (pertanyaan) => {
+    setActiveTab(pertanyaan.kategori);
     setCurrentPertanyaan(pertanyaan);
     setFormData({ 
-      id_sekolah: pertanyaan.id_sekolah?.toString() || '',
       isi_pertanyaan: pertanyaan.isi_pertanyaan, 
-      kategori: pertanyaan.kategori,
-      tipe_soal: pertanyaan.tipe_soal,
       bobot_persentase: pertanyaan.bobot_persentase
     });
     setIsEditing(true);
@@ -163,10 +134,7 @@ const BankSoal = () => {
     setIsEditing(false);
     setCurrentPertanyaan(null);
     setFormData({ 
-      id_sekolah: '',
       isi_pertanyaan: '', 
-      kategori: 'Awareness',
-      tipe_soal: 'pilihan_ganda',
       bobot_persentase: 1
     });
     setShowModal(true);
@@ -175,38 +143,39 @@ const BankSoal = () => {
   const closeModal = () => {
     setShowModal(false);
     setFormData({ 
-      id_sekolah: '',
       isi_pertanyaan: '', 
-      kategori: 'Awareness',
-      tipe_soal: 'pilihan_ganda',
       bobot_persentase: 1
     });
     setCurrentPertanyaan(null);
     setIsEditing(false);
   };
 
-  if (loading || fetchingSekolah) {
+  if (loading) {
     return (
       <div className="p-6">
-        <LoadingSpinner message={fetchingSekolah ? "Memuat data sekolah..." : "Memuat data pertanyaan..."} />
+        <LoadingSpinner message="Memuat data pertanyaan..." />
       </div>
     );
   }
 
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden">
-      {/* Header */}
       <div className="p-6">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Bank Soal</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Kelola Pertanyaan</h1>
             <p className="mt-1 text-sm text-gray-500">
               Kelola pertanyaan untuk survei evaluasi kemandirian belajar siswa
             </p>
           </div>
           <button
             onClick={openCreateModal}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            disabled={activeTabCount >= MAX_PER_KATEGORI}
+            className={`inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white ${
+              activeTabCount >= MAX_PER_KATEGORI
+                ? 'bg-gray-300 cursor-not-allowed'
+                : 'bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+            }`}
           >
             <svg className="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -215,14 +184,40 @@ const BankSoal = () => {
           </button>
         </div>
 
-        {/* Error Alert */}
+        <div className="mb-4">
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-4" aria-label="Tabs">
+              {kategoriTabs.map((tab) => {
+                const count = getCountForKategori(tab.value);
+                const isActive = activeTab === tab.value;
+                return (
+                  <button
+                    key={tab.value}
+                    type="button"
+                    onClick={() => setActiveTab(tab.value)}
+                    className={
+                      isActive
+                        ? 'border-b-2 border-blue-500 text-blue-600 whitespace-nowrap py-2 px-3 text-sm font-medium'
+                        : 'border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-2 px-3 text-sm font-medium'
+                    }
+                  >
+                    {tab.label} ({count})
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+          <p className="mt-2 text-sm text-gray-500">
+            Total soal untuk kategori {activeTab}: {activeTabCount}/{MAX_PER_KATEGORI}
+          </p>
+        </div>
+
         {error && (
           <div className="mb-4">
             <Alert type="error" message={error} onClose={() => setError('')} />
           </div>
         )}
 
-        {/* Questions Table */}
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -231,16 +226,7 @@ const BankSoal = () => {
                   No
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Sekolah
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Kategori
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Isi Pertanyaan
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Tipe
                 </th>
                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Bobot
@@ -251,31 +237,20 @@ const BankSoal = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {pertanyaanList.length === 0 ? (
+              {filteredPertanyaan.length === 0 ? (
                 <tr>
-                  <td colSpan="7" className="px-6 py-4 text-center text-sm text-gray-500">
-                    Belum ada pertanyaan dalam bank soal
+                  <td colSpan="4" className="px-6 py-4 text-center text-sm text-gray-500">
+                    Belum ada pertanyaan pada kategori ini
                   </td>
                 </tr>
               ) : (
-                pertanyaanList.map((pertanyaan, index) => (
+                filteredPertanyaan.map((pertanyaan, index) => (
                   <tr key={pertanyaan.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {index + 1}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {sekolahList.find(s => s.id === pertanyaan.id_sekolah)?.nama_sekolah || 'Sekolah tidak ditemukan'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getKategoriBadgeColor(pertanyaan.kategori)}`}>
-                        {pertanyaan.kategori}
-                      </span>
-                    </td>
                     <td className="px-6 py-4 text-sm text-gray-900 max-w-xs">
                       {truncateText(pertanyaan.isi_pertanyaan)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {pertanyaan.tipe_soal}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                       {pertanyaan.bobot_persentase}
@@ -317,67 +292,6 @@ const BankSoal = () => {
                     </h3>
                     <div className="mt-2">
                       <form onSubmit={handleSubmit} className="space-y-4">
-                        <div>
-                          <label htmlFor="id_sekolah" className="block text-sm font-medium text-gray-700 mb-1">
-                            Pilih Sekolah <span className="text-red-500">*</span>
-                          </label>
-                          <select
-                            id="id_sekolah"
-                            name="id_sekolah"
-                            required
-                            value={formData.id_sekolah}
-                            onChange={handleInputChange}
-                            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          >
-                            <option value="">Pilih Sekolah...</option>
-                            {sekolahList.map((sekolah) => (
-                              <option key={sekolah.id} value={sekolah.id}>
-                                {sekolah.nama_sekolah}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        
-                        <div>
-                          <label htmlFor="kategori" className="block text-sm font-medium text-gray-700 mb-1">
-                            Kategori
-                          </label>
-                          <select
-                            id="kategori"
-                            name="kategori"
-                            required
-                            value={formData.kategori}
-                            onChange={handleInputChange}
-                            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          >
-                            {kategoriOptions.map((option) => (
-                              <option key={option} value={option}>
-                                {option}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        
-                        <div>
-                          <label htmlFor="tipe_soal" className="block text-sm font-medium text-gray-700 mb-1">
-                            Tipe Soal
-                          </label>
-                          <select
-                            id="tipe_soal"
-                            name="tipe_soal"
-                            required
-                            value={formData.tipe_soal}
-                            onChange={handleInputChange}
-                            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                          >
-                            {tipeSoalOptions.map((option) => (
-                              <option key={option} value={option}>
-                                {option}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        
                         <div>
                           <label htmlFor="bobot_persentase" className="block text-sm font-medium text-gray-700 mb-1">
                             Bobot Nilai

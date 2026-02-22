@@ -45,4 +45,24 @@ export class ExportHasilController {
 
     return buffer;
   }
+
+  @Get('data')
+  @Roles('super_admin', 'admin')
+  async getExportData(
+    @Query('id_sekolah') id_sekolah?: string,
+    @Query('id_kejuruan') id_kejuruan?: string,
+    @Query('id_kelas') id_kelas?: string,
+    @Query('from') from?: string,
+    @Query('to') to?: string,
+  ) {
+    const filter = {
+      id_sekolah: id_sekolah ? Number(id_sekolah) : undefined,
+      id_kejuruan: id_kejuruan ? Number(id_kejuruan) : undefined,
+      id_kelas: id_kelas ? Number(id_kelas) : undefined,
+      from: from ? new Date(from) : undefined,
+      to: to ? new Date(to) : undefined,
+    };
+
+    return this.service.getRawData(filter);
+  }
 }

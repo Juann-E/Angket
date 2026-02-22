@@ -10,6 +10,17 @@ type ExportFilter = {
   to?: Date;
 };
 
+type ExportRow = {
+  nama_sekolah: string;
+  nama_kejuruan: string;
+  nama_kelas: string;
+  nama_pelajar: string;
+  nomor_absen: string;
+  total_skor: number;
+  level_sdness: string;
+  diselesaikan_pada: Date | null;
+};
+
 @Injectable()
 export class ExportHasilService {
   private pool: Pool;
@@ -23,7 +34,7 @@ export class ExportHasilService {
     });
   }
 
-  async generateExcel(filter: ExportFilter): Promise<Buffer> {
+  private async fetchList(filter: ExportFilter): Promise<ExportRow[]> {
     const conditions: string[] = [];
     const params: any[] = [];
 
@@ -59,6 +70,7 @@ export class ExportHasilService {
               p.nama_pelajar,
               p.nomor_absen,
               h.total_skor,
+              h.level_sdness,
               h.diselesaikan_pada
        FROM hasil_survey h
        JOIN pelajar p ON h.id_pelajar = p.id
@@ -73,16 +85,8 @@ export class ExportHasilService {
       params,
     );
 
-    const list = rows.map((r) => {
-      const row = r as RowDataPacket & {
-        nama_sekolah: string;
-        nama_kejuruan: string;
-        nama_kelas: string;
-        nama_pelajar: string;
-        nomor_absen: string;
-        total_skor: number;
-        diselesaikan_pada: Date | null;
-      };
+    const list: ExportRow[] = rows.map((r) => {
+      const row = r as RowDataPacket & ExportRow;
       return {
         nama_sekolah: row.nama_sekolah,
         nama_kejuruan: row.nama_kejuruan,
@@ -90,9 +94,20 @@ export class ExportHasilService {
         nama_pelajar: row.nama_pelajar,
         nomor_absen: row.nomor_absen,
         total_skor: row.total_skor,
+        level_sdness: row.level_sdness,
         diselesaikan_pada: row.diselesaikan_pada,
       };
     });
+
+    return list;
+  }
+
+  async getRawData(filter: ExportFilter): Promise<ExportRow[]> {
+    return this.fetchList(filter);
+  }
+
+  async generateExcel(filter: ExportFilter): Promise<Buffer> {
+    const list = await this.fetchList(filter);
 
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet('Hasil Survey');

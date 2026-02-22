@@ -1,4 +1,14 @@
-import { Controller, Get, Post, Body, Query, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { PelajarRegisService } from './pelajar_regis.service';
 import { JwtAuthGuard } from '../../../../auth/jwt-auth.guard';
 import { RolesGuard } from '../../../../auth/roles.guard';
@@ -8,6 +18,12 @@ class RegisterPelajarDto {
   id_kelas!: number;
   nama_pelajar!: string;
   nomor_absen!: string;
+}
+
+class UpdatePelajarDto {
+  id_kelas?: number;
+  nama_pelajar?: string;
+  nomor_absen?: string;
 }
 
 class FindAllFilterDto {
@@ -72,5 +88,19 @@ export class PelajarRegisController {
       id_sekolah: query.id_sekolah ? Number(query.id_sekolah) : undefined,
       id_kelas: query.id_kelas ? Number(query.id_kelas) : undefined,
     });
+  }
+
+  @Patch(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('super_admin', 'admin')
+  async update(@Param('id') id: string, @Body() dto: UpdatePelajarDto) {
+    return this.service.update(Number(id), dto);
+  }
+
+  @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('super_admin', 'admin')
+  async remove(@Param('id') id: string) {
+    return this.service.remove(Number(id));
   }
 }

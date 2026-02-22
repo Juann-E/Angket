@@ -137,9 +137,8 @@ export class CodeManagementService {
     if (!pin) throw new BadRequestException('Kode tidak valid');
     if (pin.is_used === 1)
       throw new BadRequestException('Kode sudah selesai digunakan');
-    // insert one response
     await this.pool.execute(
-      'INSERT INTO respon (id_pelajar, id_pertanyaan, skor_poin) VALUES (?, ?, ?)',
+      'INSERT INTO respon (id_pelajar, id_pertanyaan, skor_poin) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE skor_poin = VALUES(skor_poin)',
       [pin.id_pelajar, id_pertanyaan, skor_poin],
     );
     await this.pool.execute('UPDATE pelajar SET status_isi = ? WHERE id = ?', [
@@ -199,6 +198,35 @@ export class CodeManagementService {
     if (!row) throw new BadRequestException('Kode tidak valid');
     if (row.is_used === 1)
       throw new BadRequestException('Kode sudah selesai digunakan');
+    const [aggRows] = await this.pool.query<RowDataPacket[]>(
+      'SELECT SUM(skor_poin) AS total, COUNT(*) AS cnt FROM respon WHERE id_pelajar = ?',
+      [row.id_pelajar],
+    );
+    const agg = aggRows[0] as RowDataPacket & {
+      total: number | null;
+      cnt: number;
+    };
+    if (!agg || agg.total == null || agg.cnt === 0) {
+      throw new BadRequestException('Belum ada jawaban untuk dihitung');
+    }
+    if (agg.cnt !== 60) {
+      throw new BadRequestException(
+        'Jawaban belum lengkap, 60 pertanyaan harus terisi',
+      );
+    }
+    const total_skor = agg.total;
+    let level_sdness: 'Low' | 'Moderate' | 'High';
+    if (total_skor >= 60 && total_skor <= 140) {
+      level_sdness = 'Low';
+    } else if (total_skor >= 141 && total_skor <= 220) {
+      level_sdness = 'Moderate';
+    } else {
+      level_sdness = 'High';
+    }
+    await this.pool.execute(
+      'INSERT INTO hasil_survey (id_pelajar, total_skor, level_sdness) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE total_skor = VALUES(total_skor), level_sdness = VALUES(level_sdness), diselesaikan_pada = CURRENT_TIMESTAMP',
+      [row.id_pelajar, total_skor, level_sdness],
+    );
     await this.pool.execute(
       'UPDATE access_code SET is_used = 1, used_at = CURRENT_TIMESTAMP WHERE id = ?',
       [row.id],
@@ -208,5 +236,26 @@ export class CodeManagementService {
       row.id_pelajar,
     ]);
     return { id_pelajar: row.id_pelajar, code, finished: true };
+  }
+
+  async findAllCodes() {
+    const [rows] = await this.pool.query<RowDataPacket[]>(
+      `SELECT ac.id,
+              ac.code,
+              ac.is_used,
+              ac.id_kelas,
+              ac.created_at,
+              ac.used_at,
+              p.id AS id_pelajar,
+              p.nama_pelajar,
+              p.nomor_absen,
+              p.status_isi,
+              k.nama_kelas
+       FROM access_code ac
+       LEFT JOIN pelajar p ON p.id_access_code = ac.id
+       LEFT JOIN kelas k ON k.id = ac.id_kelas
+       ORDER BY ac.created_at DESC`,
+    );
+    return rows;
   }
 }

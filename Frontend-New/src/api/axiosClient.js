@@ -10,13 +10,16 @@ const axiosClient = axios.create({
   },
 });
 
-// Request interceptor to add auth token
+// Request interceptor to add auth token (kecuali untuk endpoint login)
 axiosClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('adminToken');
-    if (token) {
+    const url = config.url || '';
+
+    if (token && !url.includes('/auth/login')) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
   (error) => {
@@ -30,12 +33,22 @@ axiosClient.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response?.status === 401) {
-      // Unauthorized - clear token and redirect to login
-      localStorage.removeItem('adminToken');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+    const status = error.response?.status;
+    const url = error.config?.url || '';
+
+    if (status === 401 && !url.includes('/auth/login')) {
+      const currentPath = window.location.pathname;
+      const isPublicPath =
+        currentPath === '/' || currentPath.startsWith('/survey');
+      const isLogoutRequest = url.includes('/auth/logout');
+
+      if (!isPublicPath && !isLogoutRequest) {
+        localStorage.removeItem('adminToken');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }
     }
+
     return Promise.reject(error);
   }
 );

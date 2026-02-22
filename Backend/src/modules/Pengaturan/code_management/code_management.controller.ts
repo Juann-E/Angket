@@ -39,4 +39,9 @@ export class CodeManagementController {
   async finish(@Body() dto: FinishDto) {
     return this.service.finish(dto.code);
   }
+
+  @Get('list')
+  async getAllCodes() {
+    return this.service.findAllCodes();
+  }
 }

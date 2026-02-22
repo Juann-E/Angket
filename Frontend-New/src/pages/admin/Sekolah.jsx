@@ -11,6 +11,8 @@ const Sekolah = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [currentSekolah, setCurrentSekolah] = useState(null);
   const [formData, setFormData] = useState({ nama_sekolah: '' });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Fetch schools
   useEffect(() => {
@@ -94,6 +96,18 @@ const Sekolah = () => {
     setIsEditing(false);
   };
 
+  const ITEMS_PER_PAGE = 10;
+  const normalizedQuery = searchQuery.toLowerCase();
+  const filteredSekolah = sekolahList.filter((sekolah) =>
+    (sekolah.nama_sekolah || '').toLowerCase().includes(normalizedQuery)
+  );
+  const totalPages = Math.max(1, Math.ceil(filteredSekolah.length / ITEMS_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const startIndex = (safePage - 1) * ITEMS_PER_PAGE;
+  const paginatedSekolah = filteredSekolah.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  const from = filteredSekolah.length === 0 ? 0 : startIndex + 1;
+  const to = Math.min(startIndex + ITEMS_PER_PAGE, filteredSekolah.length);
+
   if (loading) {
     return (
       <div className="p-6">
@@ -104,34 +118,43 @@ const Sekolah = () => {
 
   return (
     <div className="bg-white shadow rounded-lg overflow-hidden">
-      {/* Header */}
       <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900">Data Sekolah</h1>
             <p className="mt-1 text-sm text-gray-500">
               Kelola data sekolah dalam sistem
             </p>
           </div>
-          <button
-            onClick={openCreateModal}
-            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          >
-            <svg className="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            Tambah Sekolah
-          </button>
+          <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
+              placeholder="Cari sekolah..."
+              className="w-full sm:w-64 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-sm"
+            />
+            <button
+              onClick={openCreateModal}
+              className="inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <svg className="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Tambah Sekolah
+            </button>
+          </div>
         </div>
 
-        {/* Error Alert */}
         {error && (
           <div className="mb-4">
             <Alert type="error" message={error} onClose={() => setError('')} />
           </div>
         )}
 
-        {/* Schools Table */}
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
@@ -148,17 +171,17 @@ const Sekolah = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {sekolahList.length === 0 ? (
+              {filteredSekolah.length === 0 ? (
                 <tr>
                   <td colSpan="3" className="px-6 py-4 text-center text-sm text-gray-500">
                     Belum ada data sekolah
                   </td>
                 </tr>
               ) : (
-                sekolahList.map((sekolah, index) => (
+                paginatedSekolah.map((sekolah, index) => (
                   <tr key={sekolah.id} className="hover:bg-gray-50">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {index + 1}
+                      {startIndex + index + 1}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {sekolah.nama_sekolah}
@@ -182,6 +205,57 @@ const Sekolah = () => {
               )}
             </tbody>
           </table>
+        </div>
+        <div className="flex flex-col sm:flex-row items-center justify-between px-2 sm:px-0 py-4 border-t border-gray-100 mt-2">
+          <p className="text-sm text-gray-600 mb-3 sm:mb-0">
+            Menampilkan {from}-{to} dari {filteredSekolah.length} data
+          </p>
+          <div className="inline-flex rounded-md shadow-sm">
+            <button
+              type="button"
+              onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+              disabled={safePage === 1}
+              className={`px-3 py-1 text-sm border border-gray-300 rounded-l-md ${
+                safePage === 1
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              Previous
+            </button>
+            {Array.from({ length: totalPages }).map((_, index) => {
+              const page = index + 1;
+              const isActive = page === safePage;
+              return (
+                <button
+                  key={page}
+                  type="button"
+                  onClick={() => setCurrentPage(page)}
+                  className={`px-3 py-1 text-sm border-t border-b border-gray-300 ${
+                    index === totalPages - 1 ? 'border-r' : ''
+                  } ${
+                    isActive
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white text-gray-700 hover:bg-gray-50'
+                  }`}
+                >
+                  {page}
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+              disabled={safePage === totalPages}
+              className={`px-3 py-1 text-sm border border-gray-300 rounded-r-md ${
+                safePage === totalPages && filteredSekolah.length > 0
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                  : 'bg-white text-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
 

@@ -164,6 +164,13 @@ export class PelajarRegisService {
       access_code: row.code,
       is_used: row.is_used === 1,
       used_at: row.used_at,
+      kode_akses: row.code
+        ? {
+            code: row.code,
+            is_used: row.is_used === 1,
+            used_at: row.used_at,
+          }
+        : null,
     };
   }
 
@@ -243,7 +250,75 @@ export class PelajarRegisService {
         access_code: row.code,
         is_used: row.is_used === 1,
         used_at: row.used_at,
+        kode_akses: row.code
+          ? {
+              code: row.code,
+              is_used: row.is_used === 1,
+              used_at: row.used_at,
+            }
+          : null,
       };
     });
+  }
+
+  async update(
+    id_pelajar: number,
+    data: {
+      id_kelas?: number;
+      nama_pelajar?: string;
+      nomor_absen?: string;
+    },
+  ) {
+    const [rows] = await this.pool.query<RowDataPacket[]>(
+      `SELECT id_kelas, nama_pelajar, nomor_absen 
+       FROM pelajar 
+       WHERE id = ? 
+       LIMIT 1`,
+      [id_pelajar],
+    );
+    const row = rows[0] as
+      | (RowDataPacket & {
+          id_kelas: number | null;
+          nama_pelajar: string;
+          nomor_absen: string;
+        })
+      | undefined;
+    if (!row) {
+      throw new BadRequestException('Pelajar tidak ditemukan');
+    }
+
+    const id_kelas = data.id_kelas !== undefined ? data.id_kelas : row.id_kelas;
+    const nama_pelajar =
+      data.nama_pelajar !== undefined ? data.nama_pelajar : row.nama_pelajar;
+    const nomor_absen =
+      data.nomor_absen !== undefined ? data.nomor_absen : row.nomor_absen;
+
+    try {
+      await this.pool.execute(
+        'UPDATE pelajar SET id_kelas = ?, nama_pelajar = ?, nomor_absen = ? WHERE id = ?',
+        [id_kelas, nama_pelajar, nomor_absen, id_pelajar],
+      );
+    } catch (err) {
+      const dbErr = err as { code?: string };
+      if (dbErr.code === 'ER_DUP_ENTRY') {
+        throw new BadRequestException(
+          'Siswa sudah terdaftar di kelas yang dipilih',
+        );
+      }
+      throw err;
+    }
+
+    return this.findOne({ id_pelajar });
+  }
+
+  async remove(id_pelajar: number) {
+    const [res] = await this.pool.execute('DELETE FROM pelajar WHERE id = ?', [
+      id_pelajar,
+    ]);
+    const result = res as unknown as { affectedRows?: number };
+    if (!result.affectedRows) {
+      throw new BadRequestException('Pelajar tidak ditemukan');
+    }
+    return { success: true };
   }
 }

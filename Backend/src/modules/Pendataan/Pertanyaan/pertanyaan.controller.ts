@@ -17,12 +17,12 @@ import { JwtAuthGuard } from '../../../auth/jwt-auth.guard';
 import { RolesGuard } from '../../../auth/roles.guard';
 
 @Controller('pertanyaan')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class PertanyaanController {
   constructor(private readonly service: PertanyaanService) {}
 
   @Post()
   @Roles('super_admin')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async create(@Body() dto: CreatePertanyaanDto) {
     return this.service.create(
       dto.isi_pertanyaan,
@@ -47,12 +47,14 @@ export class PertanyaanController {
 
   @Patch(':id')
   @Roles('super_admin')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async update(@Param('id') id: string, @Body() dto: UpdatePertanyaanDto) {
     return this.service.update(Number(id), dto);
   }
 
   @Delete(':id')
   @Roles('super_admin')
+  @UseGuards(JwtAuthGuard, RolesGuard)
   async remove(@Param('id') id: string) {
     return this.service.remove(Number(id));
   }
