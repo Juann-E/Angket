@@ -67,8 +67,21 @@ export class AccountManagementController {
 
   @Delete('admin/:id')
   @Roles('super_admin')
-  async removeAdmin(@Param('id') id: string) {
-    const result = await this.service.removeAdmin(Number(id));
+  async removeAdmin(
+    @Param('id') id: string,
+    @Req()
+    req: {
+      user?: { id?: number; role?: string };
+    },
+  ) {
+    const targetId = Number(id);
+    const currentId = req.user?.id;
+    if (currentId != null && Number(currentId) === targetId) {
+      throw new BadRequestException(
+        'Akun yang sedang login tidak dapat dihapus',
+      );
+    }
+    const result = await this.service.removeAdmin(targetId);
     if (!result.deleted) {
       throw new NotFoundException('Admin tidak ditemukan');
     }
