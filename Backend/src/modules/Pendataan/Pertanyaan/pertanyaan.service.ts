@@ -6,11 +6,20 @@ export class PertanyaanService {
   private pool: Pool;
 
   constructor() {
+    const isProduction = process.env.DB_HOST && process.env.DB_HOST.includes('aivencloud.com');
+    
     this.pool = createPool({
       host: process.env.DB_HOST,
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
+      port: Number(process.env.DB_PORT),
+      ...(isProduction && {
+        ssl: {
+          rejectUnauthorized: false,
+        },
+      }),
+      connectTimeout: 20000,
     });
   }
 
