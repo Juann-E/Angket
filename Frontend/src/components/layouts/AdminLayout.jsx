@@ -207,18 +207,20 @@ const AdminLayout = () => {
             Pengaturan
           </a>
         </nav>
-        
-        <div className="absolute bottom-0 w-64 p-6">
-          <button
-            type="button"
-            onClick={handleLogoutClick}
-            className="w-full inline-flex items-center justify-center py-2.5 px-4 text-sm font-medium text-red-600 border border-red-200 rounded-lg bg-slate-800 hover:bg-red-50/10 hover:border-red-300 hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+        <div className="mt-auto p-6 border-t border-slate-700">
+          <a
+            href="#logout"
+            onClick={(e) => {
+              e.preventDefault();
+              handleLogoutClick();
+            }}
+            className="flex items-center py-3 px-6 rounded-md text-red-400 hover:text-red-300 hover:bg-red-950/20 transition-colors"
           >
-            <svg className="inline-block w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="inline-block w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
             <span>Logout</span>
-          </button>
+          </a>
         </div>
       </div>
       
