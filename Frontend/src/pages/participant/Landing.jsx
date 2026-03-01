@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/common/Navbar';
 import axiosClient from '../../api/axiosClient';
-import { GraduationCap } from 'lucide-react';
+import { GraduationCap, Users } from 'lucide-react';
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -332,6 +332,43 @@ const Landing = () => {
                   <span className="inline-block mt-2 text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
                     Bimbingan Konseling, FKIP
                   </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="mt-8">
+            <h4 className="text-base font-semibold text-gray-900 mb-4">
+              Pengembang
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div className="group rounded-xl bg-white p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-t-4 border-blue-600">
+                <div className="flex items-center gap-5">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                    <Users className="w-12 h-12 text-gray-700" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-gray-800">
+                      Rangga Prawiro Utomo
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Frontend Developer
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="group rounded-xl bg-white p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-t-4 border-blue-600">
+                <div className="flex items-center gap-5">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+                    <Users className="w-12 h-12 text-gray-700" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold text-gray-800">
+                      Juannito Eriyadi
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Backend Developer
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>

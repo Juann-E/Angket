@@ -267,8 +267,37 @@ const RegistrasiSiswa = () => {
                 <input
                   id="nomor_absen"
                   type="text"
+                  inputMode="numeric"
+                  pattern="\\d*"
                   value={nomorAbsen}
-                  onChange={(e) => setNomorAbsen(e.target.value)}
+                  onChange={(e) => {
+                    const onlyDigits = e.target.value.replace(/\D+/g, '');
+                    setNomorAbsen(onlyDigits);
+                  }}
+                  onKeyDown={(e) => {
+                    const allowedKeys = [
+                      'Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+                      'Home', 'End', 'Tab'
+                    ];
+                    if (allowedKeys.includes(e.key)) return;
+                    if (!/^\d$/.test(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                  onPaste={(e) => {
+                    const paste = (e.clipboardData || window.clipboardData).getData('text');
+                    if (!/^\d+$/.test(paste)) {
+                      e.preventDefault();
+                      const digits = paste.replace(/\D+/g, '');
+                      if (digits) {
+                        const target = e.target;
+                        const start = target.selectionStart ?? target.value.length;
+                        const end = target.selectionEnd ?? target.value.length;
+                        const newValue = target.value.slice(0, start) + digits + target.value.slice(end);
+                        setNomorAbsen(newValue);
+                      }
+                    }
+                  }}
                   className="appearance-none block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out text-gray-900"
                   placeholder="Contoh: 12"
                   disabled={loadingData || submitting}
