@@ -173,7 +173,7 @@ const Landing = () => {
             Mengenal Self-Directed Learning (SDL)
           </h2>
           <p className="text-gray-700 leading-relaxed text-justify">
-            Self-Directed Learning (Kemandirian Belajar) adalah proses di mana siswa mengambil inisiatif secara mandiri dalam mendiagnosis kebutuhan belajar, merumuskan tujuan, mengidentifikasi sumber daya, memilih strategi pembelajaran yang tepat, serta mengevaluasi hasil belajarnya sendiri. SDL Check hadir untuk membantu mengukur dan memetakan tingkat kemandirian tersebut secara akurat.
+            Self-Directed Learning (SDL) adalah proses belajar di mana individu secara mandiri bertanggung jawab atas pembelajarannya, mulai dari menentukan tujuan, memilih strategi, hingga mengevaluasi hasil belajar. Pengukuran Self-Directed Learning (SDL) diperlukan untuk mengetahui tingkat kemandirian belajar individu, mengidentifikasi kekuatan dan kelemahannya, serta menjadi dasar dalam merancang intervensi atau strategi pembelajaran yang lebih tepat.
           </p>
         </div>
       </section>
