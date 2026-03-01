@@ -10,10 +10,23 @@ const Navbar = () => {
     <nav className="bg-white shadow-sm sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
-          {/* Logo */}
-          <div className="flex-shrink-0">
-            <Link to="/" className="text-xl font-bold text-blue-600">
-              SDL Check
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <Link to="/" className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <img
+                  src="/Logo/UKSW.png"
+                  alt="Logo UKSW"
+                  className="h-10 md:h-12 w-auto object-contain"
+                />
+                <img
+                  src="/Logo/FKIP.png"
+                  alt="Logo FKIP"
+                  className="h-10 md:h-12 w-auto object-contain"
+                />
+              </div>
+              <span className="ml-2 text-xl font-bold text-blue-600">
+                SDL Check
+              </span>
             </Link>
           </div>
           

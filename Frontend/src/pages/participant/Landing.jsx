@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/common/Navbar';
 import axiosClient from '../../api/axiosClient';
+import { GraduationCap } from 'lucide-react';
 
 const Landing = () => {
   const navigate = useNavigate();
@@ -9,6 +10,29 @@ const Landing = () => {
   const [pinCode, setPinCode] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [pinError, setPinError] = useState('');
+  const slides = [
+    '/Images/Slide1.jpg',
+    '/Images/Slide2.jpg',
+    '/Images/Slide3.jpg',
+    '/Images/Slide4.jpg',
+    '/Images/Slide5.jpg',
+  ];
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 5000);
+    return () => clearInterval(id);
+  }, [slides.length]);
+
+  const goPrev = () => {
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+  };
+
+  const goNext = () => {
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  };
 
   const handleOpenModal = () => {
     setPinError('');
@@ -61,34 +85,98 @@ const Landing = () => {
       <Navbar />
       
       {/* Hero Section */}
-      <div className="bg-gradient-to-br from-blue-700 to-blue-900">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
-          <div className="text-center">
-            <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-              Self Direction Learning (SDL Check)
-            </h1>
-            <p className="text-xl text-blue-100 mb-10 max-w-3xl mx-auto">
-              Ukur tingkat Self-Directed Learning (SDL) siswa dengan mudah, cepat, dan akurat.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+      <div
+        className="relative bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/Images/header.png')" }}
+      >
+        <div className="absolute inset-0 bg-blue-900/50" />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 items-center">
+            <div className="text-center md:text-left">
+              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+                Self Direction Learning (SDL Check)
+              </h1>
+              <p className="text-lg md:text-xl text-blue-100 mb-8 md:mb-10 max-w-2xl mx-auto md:mx-0 leading-relaxed">
+                Ukur tingkat Self-Directed Learning (SDL) siswa dengan mudah, cepat, dan akurat.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center md:items-start justify-center md:justify-start gap-4">
+                <button
+                  type="button"
+                  onClick={handleOpenModal}
+                  className="inline-flex items-center px-8 py-4 border border-transparent text-lg font-medium rounded-md shadow-sm text-blue-700 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                >
+                  Mulai Survei
+                </button>
+                <button
+                  type="button"
+                  onClick={handleGoToRegistrasi}
+                  className="inline-flex items-center px-8 py-4 border text-lg font-medium rounded-md shadow-sm text-white border-white bg-transparent hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white"
+                >
+                  Registrasi Peserta Baru
+                </button>
+              </div>
+            </div>
+            <div className="order-first md:order-none relative rounded-2xl shadow-2xl ring-1 ring-white/20 overflow-hidden h-64 md:h-96 group">
+              <div
+                className="flex h-full transition-transform duration-700 ease-in-out"
+                style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+              >
+                {slides.map((src, idx) => (
+                  <img
+                    key={src}
+                    src={src}
+                    alt={`Slide ${idx + 1}`}
+                    className="w-full h-full object-cover flex-shrink-0"
+                    style={{ minWidth: '100%' }}
+                  />
+                ))}
+              </div>
               <button
                 type="button"
-                onClick={handleOpenModal}
-                className="inline-flex items-center px-8 py-4 border border-transparent text-lg font-medium rounded-md shadow-sm text-blue-700 bg-yellow-400 hover:bg-yellow-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                onClick={goPrev}
+                aria-label="Sebelumnya"
+                className="absolute left-3 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-8 w-8 md:h-9 md:w-9 rounded-full bg-white/70 hover:bg-white shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto"
               >
-                Mulai Survei
+                <span className="text-lg md:text-xl font-semibold text-gray-800 leading-none">
+                  &lt;
+                </span>
               </button>
               <button
                 type="button"
-                onClick={handleGoToRegistrasi}
-                className="inline-flex items-center px-8 py-4 border text-lg font-medium rounded-md shadow-sm text-white border-white bg-transparent hover:bg-white/10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white"
+                onClick={goNext}
+                aria-label="Berikutnya"
+                className="absolute right-3 top-1/2 -translate-y-1/2 inline-flex items-center justify-center h-8 w-8 md:h-9 md:w-9 rounded-full bg-white/70 hover:bg-white shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none group-hover:pointer-events-auto"
               >
-                Registrasi Peserta Baru
+                <span className="text-lg md:text-xl font-semibold text-gray-800 leading-none">
+                  &gt;
+                </span>
               </button>
+              <div className="absolute inset-x-0 bottom-3 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                {slides.map((_, idx) => (
+                  <button
+                    type="button"
+                    key={idx}
+                    onClick={() => setCurrentSlide(idx)}
+                    aria-label={`Slide ${idx + 1}`}
+                    className={`h-2 rounded-full transition-all ${idx === currentSlide ? 'bg-white w-4' : 'bg-white/60 hover:bg-white w-2'}`}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </div>
+
+      <section className="bg-blue-50 py-12 md:py-16">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+            Mengenal Self-Directed Learning (SDL)
+          </h2>
+          <p className="text-gray-700 leading-relaxed text-justify">
+            Self-Directed Learning (Kemandirian Belajar) adalah proses di mana siswa mengambil inisiatif secara mandiri dalam mendiagnosis kebutuhan belajar, merumuskan tujuan, mengidentifikasi sumber daya, memilih strategi pembelajaran yang tepat, serta mengevaluasi hasil belajarnya sendiri. SDL Check hadir untuk membantu mengukur dan memetakan tingkat kemandirian tersebut secara akurat.
+          </p>
+        </div>
+      </section>
       
       {/* Steps Section */}
       <div className="bg-gray-50 py-16">
@@ -204,6 +292,52 @@ const Landing = () => {
           </div>
         </div>
       </div>
+
+      <section className="bg-white py-12">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h3 className="text-lg font-semibold text-gray-900 mb-6">
+            Dikembangkan Oleh:
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div className="group rounded-xl bg-white p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-t-4 border-blue-600">
+              <div className="flex items-center gap-5">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+                  <GraduationCap className="w-12 h-12 text-blue-600" />
+                </div>
+                <div>
+                  <p className="text-lg font-bold text-gray-800">
+                    Mahendra Adi N
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    NIM: 132022036
+                  </p>
+                  <span className="inline-block mt-2 text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                    Bimbingan Konseling, FKIP
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div className="group rounded-xl bg-white p-6 shadow-md hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border-t-4 border-blue-600">
+              <div className="flex items-center gap-5">
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-amber-100">
+                  <GraduationCap className="w-12 h-12 text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-lg font-bold text-gray-800">
+                    Robby Maulana B
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    NIM: 132022030
+                  </p>
+                  <span className="inline-block mt-2 text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                    Bimbingan Konseling, FKIP
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
       
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 py-8">
