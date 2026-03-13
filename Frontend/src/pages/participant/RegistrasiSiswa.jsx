@@ -267,8 +267,13 @@ const RegistrasiSiswa = () => {
                 <input
                   id="nomor_absen"
                   type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
                   value={nomorAbsen}
-                  onChange={(e) => setNomorAbsen(e.target.value)}
+                  onChange={(e) => {
+                    const onlyDigits = e.target.value.replace(/[^0-9]/g, '');
+                    setNomorAbsen(onlyDigits);
+                  }}
                   className="appearance-none block w-full px-4 py-3 bg-gray-50 border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out text-gray-900"
                   placeholder="Contoh: 12"
                   disabled={loadingData || submitting}
