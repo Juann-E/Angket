@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { createPool, Pool, RowDataPacket } from 'mysql2/promise';
 import type { Role } from '../../../auth/auth.service';
 import { UpdateAdminDto } from './dto/account_management.dto';

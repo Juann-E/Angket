@@ -1,4 +1,13 @@
 {
-  "extends": "./tsconfig.json",
-  "exclude": ["node_modules", "test", "dist", "**/*spec.ts"]
+  "compilerOptions": {
+    "module": "commonjs", // Ubah dari nodenext ke commonjs jika ada error module
+    "target": "ES2021", // Sedikit diturunkan agar lebih kompatibel dengan versi Node di server
+    "extends": "./tsconfig.json",
+    "exclude": [
+      "node_modules",
+      "test",
+      "dist",
+      "**/*spec.ts"
+    ]
+  }
 }
