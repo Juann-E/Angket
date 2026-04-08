@@ -15,9 +15,6 @@ const jwt_1 = require("@nestjs/jwt");
 const config_1 = require("@nestjs/config");
 const auth_service_1 = require("./auth.service");
 let JwtAuthGuard = class JwtAuthGuard {
-    jwtService;
-    configService;
-    authService;
     constructor(jwtService, configService, authService) {
         this.jwtService = jwtService;
         this.configService = configService;

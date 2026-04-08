@@ -19,28 +19,14 @@ const jwt_auth_guard_1 = require("../../../../auth/jwt-auth.guard");
 const roles_guard_1 = require("../../../../auth/roles.guard");
 const roles_decorator_1 = require("../../../../auth/roles.decorator");
 class RegisterPelajarDto {
-    id_kelas;
-    nama_pelajar;
-    nomor_absen;
 }
 class UpdatePelajarDto {
-    id_kelas;
-    nama_pelajar;
-    nomor_absen;
 }
 class FindAllFilterDto {
-    nama;
-    id_sekolah;
-    id_kelas;
 }
 class FindOneFilterDto {
-    id_pelajar;
-    id_sekolah;
-    id_kejuruan;
-    id_kelas;
 }
 let PelajarRegisController = class PelajarRegisController {
-    service;
     constructor(service) {
         this.service = service;
     }

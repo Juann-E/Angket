@@ -23,9 +23,6 @@ const jwt_1 = require("@nestjs/jwt");
 const config_1 = require("@nestjs/config");
 const common_2 = require("@nestjs/common");
 let AccountManagementController = class AccountManagementController {
-    service;
-    jwtService;
-    configService;
     constructor(service, jwtService, configService) {
         this.service = service;
         this.jwtService = jwtService;

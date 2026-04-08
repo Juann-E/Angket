@@ -44,10 +44,9 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AccountManagementService = void 0;
 const common_1 = require("@nestjs/common");
-const bcrypt = __importStar(require("bcrypt"));
+const bcrypt = __importStar(require("bcryptjs"));
 const promise_1 = require("mysql2/promise");
 let AccountManagementService = class AccountManagementService {
-    pool;
     constructor() {
         const isProduction = process.env.DB_HOST && process.env.DB_HOST.includes('aivencloud.com');
         this.pool = (0, promise_1.createPool)({

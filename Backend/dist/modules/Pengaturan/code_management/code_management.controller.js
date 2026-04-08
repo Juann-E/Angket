@@ -17,7 +17,6 @@ const common_1 = require("@nestjs/common");
 const code_management_service_1 = require("./code_management.service");
 const code_management_dto_1 = require("./dto/code_management.dto");
 let CodeManagementController = class CodeManagementController {
-    service;
     constructor(service) {
         this.service = service;
     }

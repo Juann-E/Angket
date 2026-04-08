@@ -13,7 +13,6 @@ exports.KelasService = void 0;
 const common_1 = require("@nestjs/common");
 const promise_1 = require("mysql2/promise");
 let KelasService = class KelasService {
-    pool;
     constructor() {
         const isProduction = process.env.DB_HOST && process.env.DB_HOST.includes('aivencloud.com');
         this.pool = (0, promise_1.createPool)({

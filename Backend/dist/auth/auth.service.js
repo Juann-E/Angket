@@ -45,15 +45,13 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthService = void 0;
 const common_1 = require("@nestjs/common");
 const jwt_1 = require("@nestjs/jwt");
-const bcrypt = __importStar(require("bcrypt"));
+const bcrypt = __importStar(require("bcryptjs"));
 const promise_1 = require("mysql2/promise");
 const crypto_1 = require("crypto");
 let AuthService = class AuthService {
-    jwtService;
-    pool;
-    revokedJtis = new Set();
     constructor(jwtService) {
         this.jwtService = jwtService;
+        this.revokedJtis = new Set();
         const isProduction = process.env.DB_HOST && process.env.DB_HOST.includes('aivencloud.com');
         this.pool = (0, promise_1.createPool)({
             host: process.env.DB_HOST,

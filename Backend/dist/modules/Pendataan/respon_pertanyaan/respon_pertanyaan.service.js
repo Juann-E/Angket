@@ -14,8 +14,6 @@ const common_1 = require("@nestjs/common");
 const promise_1 = require("mysql2/promise");
 const code_management_service_1 = require("../../Pengaturan/code_management/code_management.service");
 let ResponPertanyaanService = class ResponPertanyaanService {
-    codeManagementService;
-    pool;
     constructor(codeManagementService) {
         this.codeManagementService = codeManagementService;
         const isProduction = process.env.DB_HOST && process.env.DB_HOST.includes('aivencloud.com');

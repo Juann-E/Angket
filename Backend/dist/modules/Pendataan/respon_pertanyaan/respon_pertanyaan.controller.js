@@ -22,9 +22,6 @@ const roles_guard_1 = require("../../../auth/roles.guard");
 const roles_decorator_1 = require("../../../auth/roles.decorator");
 const respon_pertanyaan_dto_1 = require("./dto/respon_pertanyaan.dto");
 let ResponPertanyaanController = class ResponPertanyaanController {
-    service;
-    jwtService;
-    configService;
     constructor(service, jwtService, configService) {
         this.service = service;
         this.jwtService = jwtService;

@@ -21,7 +21,6 @@ const roles_decorator_1 = require("../../../../auth/roles.decorator");
 const jwt_auth_guard_1 = require("../../../../auth/jwt-auth.guard");
 const roles_guard_1 = require("../../../../auth/roles.guard");
 let KejuruanController = class KejuruanController {
-    service;
     constructor(service) {
         this.service = service;
     }
