@@ -154,9 +154,9 @@ const IsiSurvey = () => {
     try {
       setSubmittingFinish(true);
       setError('');
-      await axiosClient.post('/pengaturan/code_management/finish', { code });
+      const response = await axiosClient.post('/pengaturan/code_management/finish', { code });
       localStorage.removeItem('survey_pin');
-      navigate('/survey/selesai');
+      navigate('/survey/selesai', { state: { hasilSurvei: response.data } });
     } catch (err) {
       setError(
         err.response?.data?.message ||

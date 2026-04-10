@@ -244,7 +244,7 @@ export class CodeManagementService {
       'selesai',
       row.id_pelajar,
     ]);
-    return { id_pelajar: row.id_pelajar, code, finished: true };
+    return { id_pelajar: row.id_pelajar, code, finished: true, total_skor, level_sdness };
   }
 
   async findAllCodes() {
