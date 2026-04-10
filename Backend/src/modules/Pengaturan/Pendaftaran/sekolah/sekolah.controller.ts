@@ -1,13 +1,6 @@
 import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Delete,
-  Param,
-  Patch,
-  NotFoundException,
-  UseGuards,
+  Controller, Get, Post, Body, Delete,
+  Param, Patch, NotFoundException, UseGuards,
 } from '@nestjs/common';
 import { SekolahService } from './sekolah.service';
 import { CreateSekolahDto } from './dto/create-sekolah.dto';
@@ -19,7 +12,7 @@ import { RolesGuard } from '../../../../auth/roles.guard';
 @Controller('sekolah')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class SekolahController {
-  constructor(private readonly service: SekolahService) {}
+  constructor(private readonly service: SekolahService) { }
 
   @Post()
   @Roles('super_admin')
