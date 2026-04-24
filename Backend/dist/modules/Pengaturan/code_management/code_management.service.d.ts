@@ -11,6 +11,15 @@ export declare class CodeManagementService {
         id_pelajar: number;
         code: string;
         used: boolean;
+        hasilSurvei: {
+            total_skor: any;
+            level_sdness: any;
+        };
+    } | {
+        id_pelajar: number;
+        code: string;
+        used: boolean;
+        hasilSurvei?: undefined;
     }>;
     canRespond(id_pelajar: number): Promise<boolean>;
     submitSingleResponse(code: string, id_pertanyaan: number, skor_poin: number): Promise<{

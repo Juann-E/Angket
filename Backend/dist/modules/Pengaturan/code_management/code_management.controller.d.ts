@@ -11,6 +11,15 @@ export declare class CodeManagementController {
         id_pelajar: number;
         code: string;
         used: boolean;
+        hasilSurvei: {
+            total_skor: any;
+            level_sdness: any;
+        };
+    } | {
+        id_pelajar: number;
+        code: string;
+        used: boolean;
+        hasilSurvei?: undefined;
     }>;
     canRespond(id_pelajar: string): Promise<{
         canRespond: boolean;
