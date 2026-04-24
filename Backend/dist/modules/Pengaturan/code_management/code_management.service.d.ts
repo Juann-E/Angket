@@ -27,6 +27,8 @@ export declare class CodeManagementService {
         id_pelajar: number;
         code: string;
         finished: boolean;
+        total_skor: number;
+        level_sdness: "Low" | "Moderate" | "High";
     }>;
     findAllCodes(): Promise<RowDataPacket[]>;
 }

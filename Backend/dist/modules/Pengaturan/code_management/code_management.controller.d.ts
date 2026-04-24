@@ -25,6 +25,8 @@ export declare class CodeManagementController {
         id_pelajar: number;
         code: string;
         finished: boolean;
+        total_skor: number;
+        level_sdness: "Low" | "Moderate" | "High";
     }>;
     getAllCodes(): Promise<import("mysql2").RowDataPacket[]>;
 }
