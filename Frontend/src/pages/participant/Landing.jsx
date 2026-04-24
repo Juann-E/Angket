@@ -66,11 +66,13 @@ const Landing = () => {
       setSubmitting(true);
       setPinError('');
       const response = await axiosClient.post('/pengaturan/code_management/validate', { code: pinCode.trim() });
-      
+      console.log("Respon Server:", response.data);
       // Jika kode sudah digunakan dan memiliki hasil survei, arahkan ke halaman hasil
-      if (response.data?.used && response.data?.hasilSurvei) {
+      if ((response.data?.used === true || response.data?.used === 1) && response.data?.hasilSurvei) {
         setShowPinModal(false);
-        navigate('/survey/selesai', { state: { hasilSurvei: response.data.hasilSurvei } });
+        navigate('/survey/selesai', {
+          state: { hasilSurvei: response.data.hasilSurvei }
+        });
         return;
       }
 
@@ -78,9 +80,8 @@ const Landing = () => {
       setShowPinModal(false);
       navigate('/survey/mulai');
     } catch (err) {
-      const message =
-        err.response?.data?.message ||
-        'Kode tidak valid atau sudah digunakan';
+      // Jika masuk ke sini, berarti backend mengirim BadRequestException
+      const message = err.response?.data?.message || 'Kode tidak valid';
       setPinError(message);
     } finally {
       setSubmitting(false);
@@ -91,7 +92,7 @@ const Landing = () => {
     <div className="min-h-screen">
       {/* Navbar */}
       <Navbar />
-      
+
       {/* Hero Section */}
       <div
         className="relative bg-cover bg-center bg-no-repeat"
@@ -185,7 +186,7 @@ const Landing = () => {
           </p>
         </div>
       </section>
-      
+
       {/* Steps Section */}
       <div className="bg-gray-50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -197,7 +198,7 @@ const Landing = () => {
               Proses pengukuran yang sederhana dan efisien dalam 3 langkah mudah
             </p>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Step 1 */}
             <div className="bg-white rounded-lg shadow-sm p-8 text-center hover:shadow-md transition-shadow">
@@ -235,7 +236,7 @@ const Landing = () => {
                 Isi data diri Anda untuk mendapatkan Kode Akses.
               </p>
             </div>
-            
+
             {/* Step 2 */}
             <div className="bg-white rounded-lg shadow-sm p-8 text-center hover:shadow-md transition-shadow">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -272,7 +273,7 @@ const Landing = () => {
                 Gunakan kode Anda dan jawab kuesioner dengan jujur.
               </p>
             </div>
-            
+
             {/* Step 3 */}
             <div className="bg-white rounded-lg shadow-sm p-8 text-center hover:shadow-md transition-shadow">
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -383,7 +384,7 @@ const Landing = () => {
           </div>
         </div>
       </section>
-      
+
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

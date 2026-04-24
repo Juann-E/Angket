@@ -115,7 +115,7 @@ export class CodeManagementService {
         return {
           id_pelajar: row.id_pelajar,
           code,
-          used: true,
+          used: row.is_used === 1,
           hasilSurvei: {
             total_skor: hasil.total_skor,
             level_sdness: hasil.level_sdness
