@@ -65,7 +65,15 @@ const Landing = () => {
     try {
       setSubmitting(true);
       setPinError('');
-      await axiosClient.post('/pengaturan/code_management/validate', { code: pinCode.trim() });
+      const response = await axiosClient.post('/pengaturan/code_management/validate', { code: pinCode.trim() });
+      
+      // Jika kode sudah digunakan dan memiliki hasil survei, arahkan ke halaman hasil
+      if (response.data?.used && response.data?.hasilSurvei) {
+        setShowPinModal(false);
+        navigate('/survey/selesai', { state: { hasilSurvei: response.data.hasilSurvei } });
+        return;
+      }
+
       localStorage.setItem('survey_pin', pinCode.trim());
       setShowPinModal(false);
       navigate('/survey/mulai');
