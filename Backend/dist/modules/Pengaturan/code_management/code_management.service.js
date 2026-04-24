@@ -73,8 +73,27 @@ let CodeManagementService = class CodeManagementService {
         const row = rows[0];
         if (!row)
             throw new common_1.BadRequestException('Kode tidak valid');
-        if (row.is_used === 1)
-            throw new common_1.BadRequestException('Kode sudah selesai digunakan');
+        if (row.is_used === 1) {
+            const [hasilRows] = await this.pool.query(`SELECT total_skor, level_sdness
+         FROM hasil_survey
+         WHERE id_pelajar = ?
+         LIMIT 1`, [row.id_pelajar]);
+            const hasil = hasilRows[0];
+            if (hasil) {
+                return {
+                    id_pelajar: row.id_pelajar,
+                    code,
+                    used: true,
+                    hasilSurvei: {
+                        total_skor: hasil.total_skor,
+                        level_sdness: hasil.level_sdness
+                    }
+                };
+            }
+            else {
+                throw new common_1.BadRequestException('Kode sudah selesai digunakan, tetapi hasil survei belum tersedia');
+            }
+        }
         await this.pool.execute('UPDATE pelajar SET status_isi = ? WHERE id = ?', [
             'proses',
             row.id_pelajar,

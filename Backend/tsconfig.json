@@ -7,6 +7,7 @@
     "emitDecoratorMetadata": true,
     "useDefineForClassFields": false,
     "outDir": "./dist",
+    "rootDir": "./src",
     "baseUrl": "./",
     "incremental": true,
     "sourceMap": true,
@@ -22,5 +23,13 @@
     "strictBindCallApply": false,
     "noFallthroughCasesInSwitch": false,
     "resolvePackageJsonExports": true
-  }
+  },
+  "include": [
+    "src/**/*"
+  ], // <--- TAMBAHKAN INI: Hanya proses file di dalam src
+  "exclude": [
+    "node_modules",
+    "dist",
+    "**/*.spec.ts"
+  ] // <--- TAMBAHKAN INI: Jangan sentuh folder dist
 }
