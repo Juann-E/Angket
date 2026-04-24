@@ -6,6 +6,7 @@ async function bootstrap() {
   // WAJIB: Tambahkan ini agar NestJS tahu dia jalan di path /API milik cPanel
   // app.setGlobalPrefix('API');
   app.enableCors();
+  
   await app.listen(process.env.PORT ?? 3000);
 }
 bootstrap();
