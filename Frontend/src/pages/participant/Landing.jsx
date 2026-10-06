@@ -11,11 +11,11 @@ const Landing = () => {
   const [submitting, setSubmitting] = useState(false);
   const [pinError, setPinError] = useState('');
   const slides = [
-    '/Images/Slide1.jpg',
-    '/Images/Slide2.jpg',
-    '/Images/Slide3.jpg',
-    '/Images/Slide4.jpg',
-    '/Images/Slide5.jpg',
+    '/Images/Slide1.webp',
+    '/Images/Slide2.webp',
+    '/Images/Slide3.webp',
+    '/Images/Slide4.webp',
+    '/Images/Slide5.webp',
   ];
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -96,7 +96,7 @@ const Landing = () => {
       {/* Hero Section */}
       <div
         className="relative bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/Images/header.png')" }}
+        style={{ backgroundImage: "url('/Images/header.webp')" }}
       >
         <div className="absolute inset-0 bg-blue-900/50" />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28">

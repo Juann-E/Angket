@@ -14,12 +14,12 @@ const Navbar = () => {
             <Link to="/" className="flex items-center gap-3">
               <div className="flex items-center gap-2">
                 <img
-                  src="/Logo/UKSW.png"
+                  src="/Logo/UKSW.webp"
                   alt="Logo UKSW"
                   className="h-10 md:h-12 w-auto object-contain"
                 />
                 <img
-                  src="/Logo/FKIP.png"
+                  src="/Logo/FKIP.webp"
                   alt="Logo FKIP"
                   className="h-10 md:h-12 w-auto object-contain"
                 />
